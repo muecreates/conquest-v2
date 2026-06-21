@@ -72,28 +72,36 @@ function updatePlayersOverview(state, myPlayerId) {
   if (!container) return;
 
   container.innerHTML = '';
+  const continents = state.mapData?.continents || {};
+
   for (const player of state.players) {
     const isActive = state.players[state.currentPlayerIndex]?.id === player.id;
-    const ownedCount = Object.values(state.territories || {}).filter(t => t.owner === player.id).length;
+    const ownedTerrs = Object.entries(state.territories || {})
+      .filter(([, t]) => t.owner === player.id)
+      .map(([id]) => id);
+    const ownedCount = ownedTerrs.length;
+
+    // Find controlled continents
+    const controlledContinents = [];
+    for (const [contId, cont] of Object.entries(continents)) {
+      if (cont.territories?.every(tid => ownedTerrs.includes(tid))) {
+        controlledContinents.push({ id: contId, name: cont.name, bonus: cont.bonus, color: cont.color });
+      }
+    }
 
     const row = document.createElement('div');
     row.className = `player-row ${isActive ? 'active' : ''} ${player.eliminated ? 'eliminated' : ''}`;
 
-    const dot = document.createElement('div');
-    dot.className = 'player-color-dot';
-    dot.style.background = player.color;
-
-    const name = document.createElement('span');
-    name.className = 'pname';
-    name.textContent = player.name + (player.id === myPlayerId ? ' (Du)' : '') + (player.isAI ? ' 🤖' : '');
-
-    const terr = document.createElement('span');
-    terr.className = 'pterr';
-    terr.textContent = player.eliminated ? 'Eliminiert' : `${ownedCount} Gebiete`;
-
-    row.appendChild(dot);
-    row.appendChild(name);
-    row.appendChild(terr);
+    row.innerHTML = `
+      <div class="player-color-dot" style="background:${player.color}"></div>
+      <div class="player-info">
+        <span class="pname">${player.name}${player.id === myPlayerId ? ' (Du)' : ''}${player.isAI ? ' 🤖' : ''}</span>
+        <div class="pcont-badges">${controlledContinents.map(c =>
+          `<span class="cont-badge" style="background:${c.color}22;border-color:${c.color};color:${c.color}">${c.name} +${c.bonus}</span>`
+        ).join('')}</div>
+      </div>
+      <span class="pterr">${player.eliminated ? '☠️' : `${ownedCount}`}</span>
+    `;
     container.appendChild(row);
   }
 }
@@ -241,18 +249,23 @@ function showDeployControl(max, callback) {
   if (!ctrl) return;
 
   ctrl.style.display = '';
+  // Hide slider controls if only 1 troop (setup phase confirmation)
+  const sliderArea = slider?.parentElement || ctrl.querySelector('.deploy-control');
+  const showSlider = max > 1;
+  slider.style.display = showSlider ? '' : 'none';
+  count.textContent = showSlider ? 1 : 1;
+  const minus = document.getElementById('deployMinus');
+  const plus = document.getElementById('deployPlus');
+  if (minus) minus.style.display = showSlider ? '' : 'none';
+  if (plus) plus.style.display = showSlider ? '' : 'none';
+
   slider.max = max;
   slider.min = 1;
   slider.value = 1;
-  count.textContent = 1;
 
   slider.oninput = () => { count.textContent = slider.value; };
-  document.getElementById('deployMinus').onclick = () => {
-    if (slider.value > 1) { slider.value--; count.textContent = slider.value; }
-  };
-  document.getElementById('deployPlus').onclick = () => {
-    if (slider.value < max) { slider.value++; count.textContent = slider.value; }
-  };
+  if (minus) minus.onclick = () => { if (slider.value > 1) { slider.value--; count.textContent = slider.value; } };
+  if (plus) plus.onclick = () => { if (slider.value < max) { slider.value++; count.textContent = slider.value; } };
   btn.onclick = () => callback(parseInt(slider.value));
 }
 

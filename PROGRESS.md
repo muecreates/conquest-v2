@@ -1,6 +1,6 @@
-## Status: FERTIG — v2.0.0
+## Status: FERTIG — v2.1.0
 
-## Zuletzt abgeschlossen: Schritt 11 — Alle Schritte complete
+## Zuletzt abgeschlossen: Alle 13 Schritte implementiert
 ## Nächster Schritt: git push origin main → Railway auto-deploy
 
 ## Starten
@@ -16,11 +16,15 @@ npm install && node server.js
 ```
 conquest-v2/
 ├── package.json
-├── server.js                        # Express + Socket.io, Rooms, KI-Scheduling
+├── server.js                        # Express + Socket.io, Rooms, Turn-Timer, KI-Scheduling
 ├── railway.json                     # Railway deploy config
 ├── Procfile                         # web: node server.js
-├── .gitignore
-├── .env.example
+├── reference/
+│   ├── conquest.jsx                 # Referenz für Spiellogik + Design
+│   ├── europe.svg                   # Europa SVG Quelle
+│   ├── koeln.svg                    # Köln SVG Quelle (Koelngliederung)
+│   ├── marbella.svg                 # Marbella SVG Quelle
+│   └── world.svg                    # Weltmap SVG Quelle
 ├── PROGRESS.md
 │
 ├── engine/
@@ -30,27 +34,29 @@ conquest-v2/
 │   ├── gameEngine.js                # Phasen, Letzte-Chance, Siegbedingung
 │   ├── aiEngine.js                  # KI Easy / Medium / Hard
 │   └── maps/
-│       ├── mapLoader.js             # Lädt alle 6 Maps, BFS-Verbindungsprüfung
-│       ├── world.js                 # 42 Territorien, 6 Kontinente (Risk-klassisch)
-│       ├── europe.js                # 28 Territorien, 5 Kontinente
+│       ├── mapLoader.js             # Lädt alle 8 Maps, BFS-Verbindungsprüfung
+│       ├── world.js                 # 42 Territorien, 6 Kontinente (echte SVG-Paths)
+│       ├── europe.js                # 29 Territorien, 5 Kontinente (echte SVG-Paths)
 │       ├── africa.js                # 22 Territorien, 5 Kontinente
 │       ├── germany.js               # 16 Bundesländer, 5 Regionen
-│       ├── koeln.js                 # 9 Stadtteile, 5 Bezirke
-│       └── marbella.js              # 11 Viertel, 2 Zonen
+│       ├── koeln.js                 # 9 Stadtteile — echte Paths aus Koelngliederung.svg
+│       ├── marbella.js              # 11 Viertel, 2 Zonen
+│       ├── sanandreas.js            # 12 Territorien, 3 Kontinente (GTA SA)
+│       └── bikiniBottom.js          # 9 Territorien, 3 Kontinente
 │
 └── public/
-    ├── index.html                   # SPA: Lobby + Multiplayer-Screen
-    ├── game.html                    # Spielfeld + Combat-Modal + Last-Chance
+    ├── index.html                   # SPA: Lobby (vollständiger Einstellungsscreen)
+    ├── game.html                    # Spielfeld + Combat-Modal + Turn-Timer
     ├── css/
-    │   ├── base.css                 # Design-Tokens, Buttons
-    │   ├── lobby.css                # Lobby-Layout, Presets, Karussell
-    │   ├── game.css                 # SVG-Map, Panel, Würfel, Karten
+    │   ├── base.css                 # Design-Tokens, Buttons (inkl. btn-success/warn)
+    │   ├── lobby.css                # Settings-Rows, Zeitschätzung, MP-Slots
+    │   ├── game.css                 # SVG-Map (echte Borders), Turn-Timer-Bar, Kontinent-Badges
     │   └── overlays.css             # Modal, Toast, GameOver, LastChance
     └── js/
-        ├── lobby.js                 # Presets, Map-Auswahl, SP/MP-Routing
-        ├── game.js                  # Socket-Events, Territory-Klick, SP-Karten
+        ├── lobby.js                 # Presets, Zeitschätzung, AI-Slots per Slot, Map-Auswahl
+        ├── game.js                  # Socket-Events, Territory-Klick, Turn-Timer
         ├── render.js                # SVG-Map rendern, Highlights, Truppenblasen
-        ├── ui.js                    # Panel-Updates, Toast, Karten-UI, Special Cards
+        ├── ui.js                    # Panel-Updates, Kontinent-Badges, Karten-UI
         └── dice.js                  # Würfel-Animation, Combat-Modal, WinChance
 ```
 
@@ -58,72 +64,82 @@ conquest-v2/
 
 ## Features (vollständig implementiert)
 
-### Lobby
-- 3 Presets: Blitz (20min) / Standard (45min) / Klassisch (90min)
-- 6 Maps im horizontalen Karussell mit Emoji, Territorienanzahl, Spielzeit
-- Spielerzahl-Toggle [2][3][4][5][6], KI-Level, Gefecht-Modus
-- Karten (Eskalation/Fix/Keine), Setup (Auto/Zufällig/Draft)
-- 💥 Special Cards Toggle, Sieg-Schwelle (40%/50%/100%)
-- 💀 Letzte Chance mit Trigger-Territorienanzahl
-- Singleplayer → direkt zu game.html
-- Multiplayer → SPA-Screen mit Raum-Code + QR
+### Schritt 1+2: Maps — echte SVG-Paths
+- world.js: 42 Territorien mit echten SVG d-Paths aus BlankMap-World.svg
+- europe.js: 29 Territorien mit echten SVG d-Paths
+- koeln.js: 9 Stadtbezirke mit echten Paths aus Koelngliederung.svg (Python-geparst)
 
-### 6 Maps
-| Map | Territorien | Kontinente |
-|-----|-------------|------------|
-| Köln | 9 | 5 |
-| Marbella | 11 | 2 |
-| Deutschland | 16 | 5 |
-| Europa | 28 | 5 |
-| Afrika | 22 | 5 |
-| Weltmap | 42 | 6 |
+### Schritt 3: Territory-Borders
+- stroke: #0a1628, stroke-width: 1.5px, stroke-linejoin: round
+- Grenzen sind klar sichtbar, keine verschmolzenen Gebiete
 
-### Spiellogik (server-seitig)
-- Setup → Draft → Angriff → Verstärken
-- Balanced / Auto / Draft Territoriumverteilung
-- Siege-Bedingung via victoryThreshold (40/50/100%)
-- Karten-System (44 Karten, Eskalation/Fix/Keine)
-- Kontinent-Boni
-- KI Easy / Medium / Hard
+### Schritt 4: GTA San Andreas Map
+- 12 Territorien, 3 Kontinente: Los Santos (+3), San Fierro (+2), Las Venturas (+2)
+- Whetstone + Red County als Bonusterritorien
 
-### Special Cards (Schritt 6)
-- ☢️ Atombombe: Feindgebiet → troops=0, owner=null (1x pro Spiel)
-- 🛡 Festung: Eigenes Gebiet → +3 Verteidigungswürfel (einmalig)
-- ⚡ Blitzkrieg: Nächster Angriff → min(troops-1, 6) Würfel
-- Vergabe: alle 5 Runden an Spieler ohne Karte
+### Schritt 5: Bikini Bottom Map
+- 9 Territorien: Downtown, Krusty Krab, Chum Bucket, Jellyfish Fields, Goo Lagoon,
+  Rock Bottom, Kelp Forest, Industrial Zone, Sandy's Dome
+- 3 Kontinente: Downtown (+3), Außenbezirk (+2), Tiefsee (+2)
 
-### Letzte Chance (Schritt 7)
-- Trigger: ≤ N Territorien (einstellbar 2/3/4/5)
-- Gratis Spezialkarte + rotes Overlay + Log-Eintrag
-- Einmalig pro Spieler
+### Schritt 6: Lobby — kompletter Einstellungsscreen
+- Alle Settings sichtbar auf einem Screen (kein Toggle mehr)
+- Map-Auswahl: 8 Maps im Karussell
+- Preset: Blitz / Standard / Klassisch → setzt alle Settings automatisch
+- Truppenverteilung: Auto / Klassisch-Draft
+- Karten: An / Aus
+- Gefecht, Spieler, KI-Level, Sieg, Special Cards, Letzte Chance, Timer
+- Großer "SINGLEPLAYER STARTEN" Button
 
-### Würfel-Modal (Schritt 8)
-- Combat-Modal über Map bei jedem Angriff
-- Würfel-Animation (rollDie) mit Gewinner/Verlierer-Highlight
-- Auto-close bei Blitz-Modus
-- Win-Chance-Anzeige (lookup table)
+### Schritt 7: Truppenverteilung Auto vs. Klassisch-Draft
+- Auto: Territorien gleichmäßig verteilt, Spiel startet sofort
+- Klassisch-Draft: klassische Setup→Draft→Angriff Phasen wie in conquest.jsx
 
-### Multiplayer-Backend
-- 4-stelliger alphanumerischer Code (A-Z/0-9, ohne O/0/I/1)
-- Host erstellt Raum ohne sofortigen Start
-- Weitere Spieler joinen via Code
-- + KI-Button für Host
-- Start-Button (min. 2 Spieler)
-- QR-Code via CDN
+### Schritt 8: Spielzeit-Schätzung (live)
+- Formel: MAP_BASE_TIMES × Spieler-Faktor × Karten-Faktor × Draft-Faktor × Preset-Faktor
+- Bikini Bottom Blitz ≈ "ca. 8–14 Min"
+- Weltmap Klassisch ≈ "ca. 56–105 Min"
+- Multiplayer: Zusatz "(abhängig von Spielergeschwindigkeit)"
 
-### Deployment
-- GET /health → {status:'ok', version:'2.0.0'}
-- railway.json konfiguriert
-- Procfile: web: node server.js
-- PORT aus process.env
+### Schritt 9: Karten-System
+- Standard Risk-Karten (Infantry/Cavalry/Artillery/Wild) + Set-Einlöse-System
+- Toggle in Lobby: An (Standard Eskalation) / Aus (keine Karten)
+- KI löst Karten automatisch ein
+
+### Schritt 10: Zuglimit bei Multiplayer
+- Konfigurierbarer Timer: 30s / 60s (default) / 120s / Aus
+- Timer-Balken oben im Panel (rot, läuft ab)
+- Bei Ablauf: Auto-Zug — stärkste Grenze verstärken, Angriff/Verstärken skippen
+
+### Schritt 11: KI-Bots im Multiplayer
+- Player-Slots mit Mensch/Bot-Toggle
+- Host setzt jeden Slot auf Mensch oder Bot
+- `sync_bots_and_start`: Server synct Bots und startet sofort
+
+### Schritt 12: Platzieren-Button
+- In Setup-Phase: Territory klicken → "Platzieren"-Button erscheint
+- In Draft-Phase: Territory klicken → Slider + "Platzieren"-Button
+- Sichtbarer deployBtn in beiden Phasen
+
+### Schritt 13: UI/UX
+- Farbkodierte Buttons: ⚔ orange=Angriff-Start, rot=Angreifen, blau=Verstärken, grün=Zug beenden
+- Kontinent-Badges in Spieler-Übersicht (zeigt welche Kontinente ein Spieler kontrolliert)
+- Territory-Stroke für klare Grenzen
+- Turn-Timer-Bar sichtbar im Panel
 
 ---
 
-## Bekannte Einschränkungen
-- Afrika-Map: SVG-Paths aus älterer Version, visuell nicht geprüft
-- Multiplayer: Nur 1 echter Human + KI bisher vollständig getestet (server-seitig fertig)
-- QR-Code: Benötigt CDN-Verfügbarkeit (cdnjs qrcode.js)
-- Special Cards: KI benutzt sie noch nicht (nur human player)
+## 8 Maps
+| Map | Territorien | Kontinente | Zeit |
+|-----|-------------|------------|------|
+| Bikini Bottom | 9 | 3 | ~15 Min |
+| Köln | 9 | 5 | ~20 Min |
+| Marbella | 11 | 2 | ~20 Min |
+| GTA San Andreas | 12 | 3 | ~30 Min |
+| Deutschland | 16 | 5 | ~25 Min |
+| Afrika | 22 | 5 | ~35 Min |
+| Europa | 29 | 5 | ~40 Min |
+| Weltmap | 42 | 6 | ~75 Min |
 
 ---
 
@@ -131,4 +147,3 @@ conquest-v2/
 1. `git push origin main`
 2. Railway → New Project → Deploy from GitHub
 3. Auto-deploy bei jedem Push
-4. URL: https://[dein-projekt].railway.app

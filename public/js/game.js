@@ -134,13 +134,11 @@ function handleTerritoryClick(territoryId) {
 
   if (phase === 'setup') {
     if (terrState.owner !== myPlayerId) { showToast('Nicht dein Gebiet!', 'error'); return; }
-    // Show territory selected + Platzieren button
     setSelectedTerritory(territoryId);
     selectedFrom = territoryId;
-    const myPlayer = state.players.find(p => p.id === myPlayerId);
-    const toPlace = myPlayer?.troops || myPlayer?.troopsToPlace || 1;
-    showDeployControl(Math.max(1, toPlace), count => {
-      for (let i = 0; i < count; i++) sendAction('deploy_setup', { territoryId });
+    // Show confirm button for 1 troop
+    showDeployControl(1, () => {
+      sendAction('deploy_setup', { territoryId });
       hideDeployControl();
       clearSelection();
     });

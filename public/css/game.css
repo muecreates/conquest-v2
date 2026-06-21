@@ -19,9 +19,11 @@
 
 .territory-path {
   cursor: pointer;
-  stroke: rgba(255,255,255,0.25);
-  stroke-width: 1px;
-  transition: filter 0.15s, stroke 0.15s;
+  stroke: #0a1628;
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+  transition: filter 0.15s, stroke 0.15s, stroke-width 0.15s;
 }
 
 .territory-path:hover {

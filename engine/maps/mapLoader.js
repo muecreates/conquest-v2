@@ -1,17 +1,21 @@
-const { WORLD_MAP }   = require('./world');
-const { EUROPE_MAP }  = require('./europe');
-const { AFRICA_MAP }  = require('./africa');
-const { KOELN_MAP }   = require('./koeln');
-const { MARBELLA_MAP }= require('./marbella');
-const { GERMANY_MAP } = require('./germany');
+const { WORLD_MAP }        = require('./world');
+const { EUROPE_MAP }       = require('./europe');
+const { AFRICA_MAP }       = require('./africa');
+const { KOELN_MAP }        = require('./koeln');
+const { MARBELLA_MAP }     = require('./marbella');
+const { GERMANY_MAP }      = require('./germany');
+const { SANANDREAS_MAP }   = require('./sanandreas');
+const { BIKINI_BOTTOM_MAP }= require('./bikiniBottom');
 
 const MAPS = {
-  world:    WORLD_MAP,
-  europe:   EUROPE_MAP,
-  africa:   AFRICA_MAP,
-  koeln:    KOELN_MAP,
-  marbella: MARBELLA_MAP,
-  germany:  GERMANY_MAP
+  world:        WORLD_MAP,
+  europe:       EUROPE_MAP,
+  africa:       AFRICA_MAP,
+  koeln:        KOELN_MAP,
+  marbella:     MARBELLA_MAP,
+  germany:      GERMANY_MAP,
+  sanandreas:   SANANDREAS_MAP,
+  bikiniBottom: BIKINI_BOTTOM_MAP
 };
 
 function getMap(mapId) {

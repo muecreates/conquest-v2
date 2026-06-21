@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conquest v2 — Spielfeld</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/game.css">
+  <link rel="stylesheet" href="css/overlays.css">
+</head>
+<body>
+<div class="game-layout">
+  <!-- MAP AREA -->
+  <div class="map-area">
+    <svg id="game-map" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <!-- GAME PANEL -->
+  <div class="game-panel">
+
+    <!-- Current Player / Phase -->
+    <div class="panel-section">
+      <div class="current-player-banner" id="playerBanner">
+        <div class="player-color-dot" id="playerDot"></div>
+        <span class="current-player-name" id="playerNameDisplay">Lädt...</span>
+        <span class="phase-badge phase-setup" id="phaseBadge">SETUP</span>
+      </div>
+      <div style="margin-top:8px; font-size:12px; color:var(--sub)" id="phaseHint">
+        Wähle ein Territorium aus, um Truppen zu platzieren.
+      </div>
+    </div>
+
+    <!-- Troop Stats -->
+    <div class="panel-section">
+      <div class="troops-info">
+        <div class="troop-stat">
+          <div class="count" id="statTerritories">0</div>
+          <div class="label">Gebiete</div>
+        </div>
+        <div class="troop-stat">
+          <div class="count" id="statTroops">0</div>
+          <div class="label">Truppen</div>
+        </div>
+        <div class="troop-stat">
+          <div class="count" id="statToPlace">0</div>
+          <div class="label">Platzieren</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selected Territory -->
+    <div class="panel-section" id="selectedTerrSection" style="display:none">
+      <div class="territory-info" id="selectedTerrInfo">
+        <h4 id="selTerrName">—</h4>
+        <div class="info-row"><span>Besitzer</span><span id="selTerrOwner">—</span></div>
+        <div class="info-row"><span>Truppen</span><span id="selTerrTroops">—</span></div>
+        <div class="info-row"><span>Kontinent</span><span id="selTerrContinent">—</span></div>
+      </div>
+      <div id="deployControl" style="display:none; margin-top:10px">
+        <div class="deploy-control">
+          <button class="btn-secondary btn-sm" id="deployMinus">−</button>
+          <input type="range" id="deploySlider" min="1" max="1" value="1">
+          <span class="deploy-count" id="deployCount">1</span>
+          <button class="btn-secondary btn-sm" id="deployPlus">+</button>
+        </div>
+        <button class="btn-primary" id="deployBtn" style="width:100%; margin-top:8px">Platzieren</button>
+      </div>
+      <div id="winChanceArea" style="display:none; margin-top:10px">
+        <div class="win-chance-bar">
+          <div class="bar-label">
+            <span>Siegchance</span>
+            <span id="winChancePct">—</span>
+          </div>
+          <div class="win-chance-track">
+            <div class="win-chance-fill" id="winChanceFill" style="width:0%; background:var(--danger)"></div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--sub); margin-top:4px" id="winChanceDetail"></div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="panel-section">
+      <div class="action-buttons">
+        <button class="btn-primary"  id="endDraftBtn"   style="display:none">Angriff-Phase starten →</button>
+        <button class="btn-danger"   id="attackBtn"     style="display:none">Angreifen</button>
+        <button class="btn-danger"   id="blitzBtn"      style="display:none">⚡ Blitz-Angriff</button>
+        <button class="btn-secondary" id="endAttackBtn"  style="display:none">Verstärkungs-Phase →</button>
+        <button class="btn-primary"  id="fortifyBtn"    style="display:none">Truppen verschieben</button>
+        <button class="btn-secondary" id="skipFortifyBtn" style="display:none">Zug beenden</button>
+      </div>
+    </div>
+
+    <!-- Dice Area -->
+    <div class="panel-section" id="diceSection" style="display:none">
+      <div style="font-size:12px; font-weight:700; color:var(--sub); margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px">Würfel</div>
+      <div class="dice-area" id="diceArea"></div>
+    </div>
+
+    <!-- Cards -->
+    <div class="panel-section" id="cardsSection" style="display:none">
+      <div class="cards-toggle" id="cardsToggle">
+        <span style="font-size:12px; font-weight:700; color:var(--sub); text-transform:uppercase; letter-spacing:.5px">
+          Karten <span id="cardCount" style="color:var(--accent)">0</span>
+        </span>
+        <span id="cardsArrow" style="color:var(--sub)">▼</span>
+      </div>
+      <div id="cardsPanel" style="display:none">
+        <div class="cards-hand" id="cardsHand"></div>
+        <button class="btn-primary btn-sm" id="tradeCardsBtn" style="display:none; margin-top:8px; width:100%">
+          Karten einlösen (+<span id="tradeValue">0</span> Truppen)
+        </button>
+        <div style="font-size:11px; color:var(--sub); margin-top:4px" id="cardsHint"></div>
+      </div>
+    </div>
+
+    <!-- Special Card -->
+    <div class="panel-section" id="specialCardSection" style="display:none">
+      <div style="font-size:12px; font-weight:700; color:var(--warning); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">💥 Spezialkarte</div>
+      <button class="special-card-btn btn-primary" data-card-type="" style="width:100%; background:rgba(210,153,34,0.15); border:1px solid var(--warning); color:var(--warning)"></button>
+    </div>
+
+    <!-- Players Overview -->
+    <div class="panel-section">
+      <div style="font-size:12px; font-weight:700; color:var(--sub); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">Spieler</div>
+      <div class="players-overview" id="playersOverview"></div>
+    </div>
+
+    <!-- Game Log -->
+    <div class="panel-section">
+      <div style="font-size:12px; font-weight:700; color:var(--sub); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">Verlauf</div>
+      <ul class="game-log" id="gameLog"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div class="map-tooltip" id="mapTooltip">
+  <h4 id="tooltipName"></h4>
+  <div style="font-size:11px; margin-top:3px">
+    <span class="owner-dot" id="tooltipDot"></span>
+    <span id="tooltipOwner"></span>
+  </div>
+  <div style="font-size:11px; color:var(--sub); margin-top:2px" id="tooltipTroops"></div>
+  <div style="font-size:11px; color:var(--sub)" id="tooltipContinent"></div>
+</div>
+
+<!-- Last Chance Overlay -->
+<div id="lastChanceOverlay" style="display:none" class="last-chance-overlay">
+  <div class="last-chance-card">
+    <div class="lc-icon">⚠️</div>
+    <div class="lc-title">LETZTE CHANCE!</div>
+    <div class="lc-desc">Du hast eine Spezialkarte erhalten!<br>Jetzt alles riskieren!</div>
+    <button class="btn-danger lc-close" onclick="document.getElementById('lastChanceOverlay').style.display='none'">Kämpfen!</button>
+  </div>
+</div>
+
+<!-- Combat Modal -->
+<div id="combatModal" style="display:none" class="combat-modal">
+  <div class="combat-modal-card">
+    <div class="cm-title" id="cmTitle">⚔ Angriff</div>
+    <div class="cm-dice-area" id="cmDiceArea"></div>
+    <div class="cm-result" id="cmResult"></div>
+    <button class="btn-secondary cm-close" onclick="document.getElementById('combatModal').style.display='none'">Weiter →</button>
+  </div>
+</div>
+
+<!-- Game Over Overlay -->
+<div class="game-over-overlay" id="gameOverOverlay" style="display:none">
+  <div class="game-over-card">
+    <h1 id="gameOverTitle">🏆 Sieg!</h1>
+    <div class="winner-name" id="gameOverWinner"></div>
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>Spieler</th>
+          <th>Gebiete</th>
+          <th>Gew</th>
+          <th>Verl</th>
+          <th>K/D</th>
+          <th>Karten</th>
+        </tr>
+      </thead>
+      <tbody id="statsBody"></tbody>
+    </table>
+    <div style="display:flex; gap:10px; margin-top:20px">
+      <button class="btn-primary" id="newGameBtn" style="flex:1">Neues Spiel</button>
+      <button class="btn-secondary" id="backLobbyBtn" style="flex:1">Lobby</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/dice.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

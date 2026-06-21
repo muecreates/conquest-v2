@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conquest v2</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/lobby.css">
+</head>
+<body>
+
+<!-- LOBBY SCREEN -->
+<div id="lobbyScreen" class="screen active">
+  <div class="lobby-wrap">
+    <header class="lby-header">
+      <span class="lby-title">⚔ CONQUEST</span>
+      <span class="lby-version">v2.0</span>
+    </header>
+
+    <!-- Presets -->
+    <div class="presets">
+      <button class="preset-btn" data-preset="blitz">
+        <span class="preset-icon">⚡</span>
+        <span class="preset-name">BLITZ</span>
+        <span class="preset-time">~20 Min</span>
+        <span class="preset-desc">Schnell &amp; wild</span>
+      </button>
+      <button class="preset-btn active" data-preset="standard">
+        <span class="preset-icon">●</span>
+        <span class="preset-name">STANDARD</span>
+        <span class="preset-time">~45 Min</span>
+        <span class="preset-desc">Ausgewogen</span>
+      </button>
+      <button class="preset-btn" data-preset="klassisch">
+        <span class="preset-icon">♟</span>
+        <span class="preset-name">KLASSISCH</span>
+        <span class="preset-time">~90 Min</span>
+        <span class="preset-desc">Echter Risk</span>
+      </button>
+    </div>
+
+    <!-- Map Carousel -->
+    <div class="map-section">
+      <div class="section-label">KARTE WÄHLEN</div>
+      <div class="map-carousel" id="mapCarousel">
+        <div class="map-card active" data-map="koeln">
+          <div class="map-emoji">🏙</div>
+          <div class="map-name">Köln</div>
+          <div class="map-meta">9 T · ~20 Min</div>
+        </div>
+        <div class="map-card" data-map="marbella">
+          <div class="map-emoji">🌴</div>
+          <div class="map-name">Marbella</div>
+          <div class="map-meta">11 T · ~20 Min</div>
+        </div>
+        <div class="map-card" data-map="germany">
+          <div class="map-emoji">🇩🇪</div>
+          <div class="map-name">Deutschland</div>
+          <div class="map-meta">16 T · ~25 Min</div>
+        </div>
+        <div class="map-card" data-map="europe">
+          <div class="map-emoji">🌍</div>
+          <div class="map-name">Europa</div>
+          <div class="map-meta">28 T · ~40 Min</div>
+        </div>
+        <div class="map-card" data-map="africa">
+          <div class="map-emoji">🦁</div>
+          <div class="map-name">Afrika</div>
+          <div class="map-meta">20 T · ~35 Min</div>
+        </div>
+        <div class="map-card" data-map="world">
+          <div class="map-emoji">🌐</div>
+          <div class="map-name">Weltmap</div>
+          <div class="map-meta">42 T · ~75 Min</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Player name -->
+    <div class="name-row">
+      <input type="text" id="playerName" placeholder="Dein Name" maxlength="20" autocomplete="off">
+    </div>
+
+    <!-- Main Buttons -->
+    <div class="main-buttons">
+      <button class="btn-sp btn-primary" id="spBtn">👤 SINGLEPLAYER</button>
+      <button class="btn-mp btn-secondary" id="mpBtn">🌐 MULTIPLAYER</button>
+    </div>
+
+    <!-- Advanced Settings -->
+    <div class="adv-toggle" id="advToggle">▼ Erweiterte Einstellungen</div>
+    <div class="adv-panel" id="advPanel" style="display:none">
+      <div class="adv-grid">
+
+        <div class="adv-row">
+          <span class="adv-label">Spieler</span>
+          <div class="toggle-group" id="playerCount">
+            <button class="tgl active" data-val="2">2</button>
+            <button class="tgl" data-val="3">3</button>
+            <button class="tgl" data-val="4">4</button>
+            <button class="tgl" data-val="5">5</button>
+            <button class="tgl" data-val="6">6</button>
+          </div>
+        </div>
+
+        <div class="adv-row">
+          <span class="adv-label">KI-Level</span>
+          <div class="toggle-group" id="aiLevel">
+            <button class="tgl" data-val="easy">Leicht</button>
+            <button class="tgl active" data-val="medium">Mittel</button>
+            <button class="tgl" data-val="hard">Schwer</button>
+          </div>
+        </div>
+
+        <div class="adv-row">
+          <span class="adv-label">Gefecht</span>
+          <div class="toggle-group" id="combatMode">
+            <button class="tgl active" data-val="classic">Klassisch</button>
+            <button class="tgl" data-val="balanced">Balanced</button>
+            <button class="tgl" data-val="aggressive">Aggressiv</button>
+            <button class="tgl" data-val="blitz">Blitz</button>
+          </div>
+        </div>
+
+        <div class="adv-row">
+          <span class="adv-label">Karten</span>
+          <div class="toggle-group" id="cardMode">
+            <button class="tgl active" data-val="classic">Eskalation</button>
+            <button class="tgl" data-val="fixed">Fester Wert</button>
+            <button class="tgl" data-val="none">Keine</button>
+          </div>
+        </div>
+
+        <div class="adv-row">
+          <span class="adv-label">💥 Special Cards</span>
+          <div class="toggle-group" id="specialCards">
+            <button class="tgl active" data-val="true">AN</button>
+            <button class="tgl" data-val="false">AUS</button>
+          </div>
+        </div>
+
+        <div class="adv-row">
+          <span class="adv-label">Setup</span>
+          <div class="toggle-group" id="territorySetup">
+            <button class="tgl active" data-val="auto">Auto Balanced</button>
+            <button class="tgl" data-val="random">Zufällig</button>
+            <button class="tgl" data-val="draft">Draft</button>
+          </div>
+        </div>
+
+        <div class="adv-row">
+          <span class="adv-label">Sieg</span>
+          <div class="toggle-group" id="victoryThreshold">
+            <button class="tgl" data-val="40">40% Schnell</button>
+            <button class="tgl active" data-val="50">50% Mehrheit</button>
+            <button class="tgl" data-val="100">100% Dominanz</button>
+          </div>
+        </div>
+
+        <div class="adv-row">
+          <span class="adv-label">💀 Letzte Chance</span>
+          <div class="toggle-group" id="lastChance">
+            <button class="tgl active" data-val="true">AN</button>
+            <button class="tgl" data-val="false">AUS</button>
+          </div>
+          <div class="toggle-group" id="lastChanceTrigger" style="margin-left:8px">
+            <button class="tgl" data-val="2">2</button>
+            <button class="tgl active" data-val="3">3</button>
+            <button class="tgl" data-val="4">4</button>
+            <button class="tgl" data-val="5">5</button>
+          </div>
+          <span class="adv-sub">Gebiete</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MULTIPLAYER SCREEN -->
+<div id="mpScreen" class="screen" style="display:none">
+  <div class="lobby-wrap">
+    <header class="lby-header">
+      <button class="btn-back" id="mpBackBtn">← Zurück</button>
+      <span class="lby-title">MULTIPLAYER</span>
+    </header>
+
+    <div class="mp-tabs">
+      <button class="mp-tab active" id="tabCreate">Raum erstellen</button>
+      <button class="mp-tab" id="tabJoin">Beitreten</button>
+    </div>
+
+    <!-- Create -->
+    <div id="mpCreate">
+      <div class="room-code-display">
+        <div class="rc-label">RAUM-CODE</div>
+        <div class="rc-code" id="mpRoomCode">----</div>
+      </div>
+      <div id="qrContainer" style="text-align:center; margin:16px 0"></div>
+      <div class="mp-players" id="mpPlayerList"></div>
+      <button class="btn-secondary mp-ai-btn" id="mpAddAI">+ KI hinzufügen</button>
+      <button class="btn-primary mp-start-btn" id="mpStartBtn" disabled>▶ SPIEL STARTEN</button>
+    </div>
+
+    <!-- Join -->
+    <div id="mpJoin" style="display:none">
+      <div class="join-form">
+        <input type="text" id="joinCode" placeholder="CODE eingeben" maxlength="6"
+               style="text-transform:uppercase; font-size:28px; text-align:center; letter-spacing:8px">
+        <input type="text" id="joinName" placeholder="Dein Name" maxlength="20">
+        <button class="btn-primary" id="joinBtn">Beitreten →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/lobby.js"></script>
+</body>
+</html>

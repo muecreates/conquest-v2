@@ -1,0 +1,104 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0d1117;
+  --panel:    #161b22;
+  --panel2:   #1c2430;
+  --border:   #30363d;
+  --accent:   #388bfd;
+  --accent2:  #1f6feb;
+  --text:     #e6edf3;
+  --sub:      #8b949e;
+  --success:  #3fb950;
+  --warning:  #d29922;
+  --danger:   #f85149;
+
+  --red:    #c0392b;
+  --blue:   #2980b9;
+  --green:  #27ae60;
+  --yellow: #f39c12;
+  --purple: #8e44ad;
+  --teal:   #16a085;
+
+  --radius: 8px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  border-radius: var(--radius);
+  transition: all 0.15s ease;
+}
+
+button:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 20px;
+  font-weight: 600;
+}
+.btn-primary:hover { background: var(--accent2); }
+
+.btn-secondary {
+  background: var(--panel2);
+  color: var(--text);
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  padding: 8px 16px;
+  font-weight: 600;
+}
+.btn-danger:hover { background: #c0392b; }
+
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+input, select {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+select option { background: var(--panel2); }
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+@keyframes popIn { 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+@keyframes rollDie { 0%{transform:rotate(0deg) scale(1)} 50%{transform:rotate(180deg) scale(0.8)} 100%{transform:rotate(360deg) scale(1)} }
+
+.animate-fade { animation: fadeIn 0.3s ease forwards; }
+.animate-pop { animation: popIn 0.3s ease forwards; }

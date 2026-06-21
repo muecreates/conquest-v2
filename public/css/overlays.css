@@ -1,0 +1,70 @@
+/* Tooltip */
+.map-tooltip { position: fixed; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; font-size: 12px; pointer-events: none; z-index: 1000; max-width: 180px; box-shadow: var(--shadow); display: none; }
+.map-tooltip.visible { display: block; }
+.map-tooltip h4 { font-size: 13px; margin-bottom: 3px; }
+.map-tooltip .owner-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 20px; font-size: 13px; font-weight: 600; z-index: 3000; animation: fadeIn 0.2s ease forwards; pointer-events: none; white-space: nowrap; }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+.toast.success { border-color: var(--success); color: var(--success); }
+
+/* Game Over */
+.game-over-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.3s ease; }
+.game-over-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 580px; width: 90%; animation: popIn 0.4s ease; max-height: 80vh; overflow-y: auto; }
+.game-over-card h1 { font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 6px; }
+.game-over-card .winner-name { text-align: center; font-size: 18px; color: var(--accent); font-weight: 700; margin-bottom: 20px; }
+.stats-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.stats-table th { color: var(--sub); font-weight: 600; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
+.stats-table td { padding: 6px 8px; border-bottom: 1px solid rgba(48,54,61,0.5); }
+
+/* Combat Modal */
+.combat-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1900;
+}
+.combat-modal-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 320px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  animation: popIn 0.3s ease;
+}
+.cm-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.cm-dice-area { margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.cm-result { font-size: 15px; font-weight: 700; margin-bottom: 16px; min-height: 24px; }
+.cm-close { width: 100%; padding: 10px; }
+
+/* Last Chance Overlay */
+.last-chance-overlay {
+  position: fixed; inset: 0;
+  background: rgba(139,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2100;
+  animation: lcPulse 1s ease;
+}
+.last-chance-card {
+  background: #1a0808;
+  border: 2px solid var(--danger);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  max-width: 360px;
+  animation: popIn 0.4s ease;
+}
+.lc-icon { font-size: 48px; margin-bottom: 8px; }
+.lc-title { font-size: 28px; font-weight: 900; color: var(--danger); letter-spacing: 2px; margin-bottom: 8px; }
+.lc-desc { font-size: 14px; color: var(--sub); margin-bottom: 20px; line-height: 1.5; }
+.lc-close { width: 100%; padding: 12px; font-size: 15px; }
+
+@keyframes lcPulse {
+  0% { background: rgba(139,0,0,0); }
+  50% { background: rgba(139,0,0,0.6); }
+  100% { background: rgba(139,0,0,0.4); }
+}

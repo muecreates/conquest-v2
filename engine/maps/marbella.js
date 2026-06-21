@@ -1,0 +1,48 @@
+const MARBELLA_MAP = {
+  id: 'marbella', name: 'Marbella', description: '11 Viertel · ~20 Min', estimatedTime: 20,
+  viewBox: '0 0 585 376',
+  territories: [
+    { id: 'puerto_banus', name: 'Puerto Banús', continent: 'costa',
+      d: 'M 20,280 L 80,270 L 90,300 L 100,340 L 60,360 L 20,350 Z',
+      labelX: 58, labelY: 315, adjacencies: ['san_pedro','nueva_andalucia'] },
+    { id: 'san_pedro', name: 'San Pedro', continent: 'costa',
+      d: 'M 80,270 L 140,260 L 155,290 L 150,330 L 100,340 L 90,300 Z',
+      labelX: 115, labelY: 300, adjacencies: ['puerto_banus','nueva_andalucia','marbella_centro'] },
+    { id: 'nueva_andalucia', name: 'Nueva Andalucía', continent: 'sierra',
+      d: 'M 60,200 L 140,190 L 155,260 L 140,260 L 80,270 L 60,240 Z',
+      labelX: 102, labelY: 228, adjacencies: ['puerto_banus','san_pedro','sierra_blanca','benahavis'] },
+    { id: 'benahavis', name: 'Benahavís', continent: 'sierra',
+      d: 'M 20,140 L 100,130 L 120,190 L 60,200 L 20,200 Z',
+      labelX: 68, labelY: 165, adjacencies: ['nueva_andalucia','sierra_blanca','ojen'] },
+    { id: 'marbella_centro', name: 'Marbella Centro', continent: 'costa',
+      d: 'M 140,260 L 220,250 L 240,280 L 230,340 L 170,350 L 150,330 Z',
+      labelX: 190, labelY: 300, adjacencies: ['san_pedro','la_milla_de_oro','sierra_blanca'] },
+    { id: 'sierra_blanca', name: 'Sierra Blanca', continent: 'sierra',
+      d: 'M 100,130 L 220,120 L 240,190 L 220,250 L 140,260 L 140,190 L 120,190 Z',
+      labelX: 178, labelY: 192, adjacencies: ['benahavis','nueva_andalucia','marbella_centro','la_milla_de_oro','ojen'] },
+    { id: 'la_milla_de_oro', name: 'La Milla de Oro', continent: 'costa',
+      d: 'M 220,250 L 310,240 L 325,270 L 310,340 L 230,340 L 240,280 Z',
+      labelX: 272, labelY: 295, adjacencies: ['marbella_centro','elviria','sierra_blanca'] },
+    { id: 'ojen', name: 'Ojén', continent: 'sierra',
+      d: 'M 100,60 L 280,50 L 300,130 L 220,120 L 100,130 Z',
+      labelX: 192, labelY: 90, adjacencies: ['benahavis','sierra_blanca','elviria'] },
+    { id: 'elviria', name: 'Elviria', continent: 'costa',
+      d: 'M 310,240 L 420,235 L 440,260 L 430,340 L 310,340 L 325,270 Z',
+      labelX: 372, labelY: 290, adjacencies: ['la_milla_de_oro','marbella_este','ojen'] },
+    { id: 'marbella_este', name: 'Marbella Este', continent: 'costa',
+      d: 'M 420,235 L 520,230 L 540,260 L 540,340 L 430,340 L 440,260 Z',
+      labelX: 482, labelY: 285, adjacencies: ['elviria','istan'] },
+    { id: 'istan', name: 'Istán', continent: 'sierra',
+      d: 'M 280,50 L 540,45 L 560,180 L 440,235 L 420,235 L 300,130 Z',
+      labelX: 420, labelY: 135, adjacencies: ['ojen','elviria','marbella_este'] },
+  ],
+  continents: {
+    costa:  { name: 'Costa del Sol', bonus: 3, color: '#3a6a8a',
+      territories: ['puerto_banus','san_pedro','marbella_centro','la_milla_de_oro','elviria','marbella_este'] },
+    sierra: { name: 'Sierra',        bonus: 2, color: '#4a7a4a',
+      territories: ['nueva_andalucia','benahavis','sierra_blanca','ojen','istan'] }
+  },
+  crossConnections: []
+};
+
+module.exports = { MARBELLA_MAP };

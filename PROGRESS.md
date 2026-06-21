@@ -1,6 +1,6 @@
-## Status: FERTIG — v2.2.0
+## Status: FERTIG — v2.3.0
 
-## Zuletzt abgeschlossen: Design-Overhaul (6 Fix-Schritte)
+## Zuletzt abgeschlossen: Map-Qualität + Kontinent-Glow (Schritte 2-3)
 ## Nächster Schritt: git push origin main → Railway auto-deploy
 
 ## Starten
@@ -61,13 +61,15 @@ conquest-v2/
 | Europa (29T) | SVG d-Paths | ✓ Echte Shapes |
 | Afrika (24T) | GeoJSON countries.geojson | ✓ Echte Ländergrenzen |
 | Deutschland (16T) | GeoJSON Bundesländer | ✓ Echte Bundesland-Shapes |
-| Köln (9T) | Koelngliederung.svg Python-parsed | ✓ Echte Bezirksgrenzen |
+| Köln (9T) | Koelngliederung.svg → skaliert auf 960×600 | ✓ Echte Bezirksgrenzen |
 | Marbella (11T) | Proportionale Polygone | ✓ Erkennbare Viertel-Shapes |
 | San Andreas (12T) | Proportionale SA-Karte Polygone | ✓ LS/SF/LV erkennbar |
 | Bikini Bottom (9T) | Cubic-Bezier organische Shapes | ✓ Organische Formen |
 
-## Fix-Schritt 2: Kontinent-Borders + Labels
-- Jedes Territory: stroke in Kontinent-Farbe, 1.8px
+## Fix-Schritt 2: Kontinent-Borders + Labels (aktualisiert v2.3.0)
+- Jedes Territory: stroke in Kontinent-Farbe, 2px
+- Kontinent-Grenzen: feGaussianBlur-Glow (6px, helle Farbe, 55% Opazität) hinter Territories die an anderen Kontinenten grenzen
+- lightenHex + isContinentBorder Helpers in render.js
 - Selected: weißer 3px stroke
 - Attackable/Fortifiable: pulsierender roter/grüner stroke
 - Kontinent-Labels: zentriertes Text über allen Territories (18% Opacity, uppercase)

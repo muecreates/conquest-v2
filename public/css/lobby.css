@@ -57,6 +57,86 @@
 
 /* Map Carousel */
 .map-section { margin-bottom: 18px; }
+.map-carousel { margin-bottom: 18px; }
+
+/* Settings rows */
+.settings-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.setting-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 120px;
+}
+.setting-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--sub);
+}
+
+/* Time estimate */
+.time-estimate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(56,139,253,0.06);
+  border: 1px solid rgba(56,139,253,0.2);
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.te-icon { font-size: 16px; }
+.te-label { color: var(--sub); font-size: 11px; }
+.te-value { color: var(--accent); font-weight: 700; }
+
+/* MP Slots */
+.mp-slots { margin-bottom: 16px; }
+.mp-slot-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+}
+.slot-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.slot-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.slot-name { font-size: 13px; font-weight: 600; }
+.slot-connected { font-size: 10px; color: var(--success); }
+.slot-type-toggle { display: flex; gap: 4px; }
+.slot-host-badge {
+  font-size: 9px;
+  padding: 3px 8px;
+  background: rgba(56,139,253,0.15);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
 .section-label {
   font-size: 10px;
   font-weight: 700;

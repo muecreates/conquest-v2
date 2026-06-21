@@ -86,7 +86,10 @@ function processAITurn(room) {
     io.to(room.code).emit('game_over', { winner: getPlayer(state, state.winner), stats: buildStats(state) });
   }
   broadcastState(room);
-  if (state.phase !== 'gameover') scheduleAI(room);
+  if (state.phase !== 'gameover') {
+    scheduleAI(room);
+    scheduleTurnTimer(room);
+  }
 }
 
 function buildStats(state) {
@@ -99,9 +102,61 @@ function buildStats(state) {
 
 function startGameInRoom(room) {
   room.gameState = createGameState(room.settings, room.players);
+  room.turnTimerHandle = null;
   broadcastState(room);
   io.to(room.code).emit('game_started', { roomCode: room.code });
   scheduleAI(room);
+  scheduleTurnTimer(room);
+}
+
+function scheduleTurnTimer(room) {
+  if (room.turnTimerHandle) { clearTimeout(room.turnTimerHandle); room.turnTimerHandle = null; }
+  const timerSec = room.settings?.turnTimer || 0;
+  if (!timerSec || !room.gameState || room.gameState.phase === 'gameover') return;
+  const current = getCurrentPlayer(room.gameState);
+  if (!current || current.isAI) return;
+
+  const deadlineMs = timerSec * 1000;
+  room.turnTimerDeadline = Date.now() + deadlineMs;
+  io.to(room.code).emit('turn_timer', { seconds: timerSec, playerId: current.id });
+
+  room.turnTimerHandle = setTimeout(() => {
+    const state = room.gameState;
+    if (!state || state.phase === 'gameover') return;
+    const cp = getCurrentPlayer(state);
+    if (!cp || cp.isAI || cp.id !== current.id) return;
+    // Auto-finish turn: deploy all remaining to strongest border territory, skip attack
+    autoFinishTurn(room, cp.id);
+  }, deadlineMs);
+}
+
+function autoFinishTurn(room, playerId) {
+  const state = room.gameState;
+  // Deploy remaining to strongest own border territory
+  if (state.phase === 'setup' || state.phase === 'reinforce') {
+    const ownTerrs = Object.entries(state.territories)
+      .filter(([, t]) => t.owner === playerId)
+      .map(([id, t]) => ({ id, troops: t.troops }))
+      .sort((a, b) => b.troops - a.troops);
+    if (ownTerrs.length > 0) {
+      const toPlace = state.players.find(p => p.id === playerId)?.troopsToPlace || 0;
+      if (toPlace > 0) deployTroop(state, playerId, ownTerrs[0].id, toPlace);
+    }
+  }
+  // Skip to end of turn
+  let r = startAttackPhase(state, playerId);
+  if (r?.success) {
+    r = startFortifyPhase(state, playerId);
+    if (r?.success) skipFortify(state, playerId);
+    else skipFortify(state, playerId);
+  }
+  io.to(room.code).emit('turn_timeout', { playerId });
+  if (state.phase === 'gameover') {
+    io.to(room.code).emit('game_over', { winner: getPlayer(state, state.winner), stats: buildStats(state) });
+  }
+  broadcastState(room);
+  scheduleAI(room);
+  scheduleTurnTimer(room);
 }
 
 io.on('connection', (socket) => {
@@ -159,6 +214,25 @@ io.on('connection', (socket) => {
       aiDifficulty: room.settings.aiDifficulty || 'medium', socketId: null
     });
     io.to(roomCode).emit('player_joined', { players: room.players.map(p => ({ id: p.id, name: p.name, color: p.color, isAI: p.isAI })) });
+  });
+
+  // Sync bots and start (new lobby: host sets exact bot count then starts)
+  socket.on('sync_bots_and_start', ({ roomCode, botCount, aiDifficulty }) => {
+    const room = getRoom(roomCode);
+    if (!room || room.hostId !== socket.id) return;
+    // Remove existing AI players, keep humans
+    room.players = room.players.filter(p => !p.isAI);
+    // Add requested number of bots
+    const n = Math.max(0, Math.min(botCount, 6 - room.players.length));
+    for (let i = 0; i < n; i++) {
+      const idx = room.players.length;
+      room.players.push({
+        id: `ai_${idx}`, name: `KI ${AI_NAMES[idx - 1] || idx}`,
+        color: PLAYER_COLORS[idx] || '#888', isAI: true,
+        aiDifficulty: aiDifficulty || 'medium', socketId: null
+      });
+    }
+    startGameInRoom(room);
   });
 
   // Host starts multiplayer game
@@ -237,6 +311,7 @@ io.on('connection', (socket) => {
     }
     broadcastState(room);
     scheduleAI(room);
+    scheduleTurnTimer(room);
   });
 
   socket.on('disconnect', () => {

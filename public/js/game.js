@@ -8,6 +8,7 @@ let selectedTo = null;
 let roomCode = null;
 let combatMode = 'classic';
 let activeSpecialCard = null;
+let timerInterval = null;
 
 const $ = id => document.getElementById(id);
 
@@ -53,6 +54,16 @@ function init() {
   });
 
   socket.on('action_error', ({ error }) => { showToast(error, 'error'); });
+
+  socket.on('turn_timer', ({ seconds, playerId }) => {
+    if (playerId === myPlayerId) startTurnTimer(seconds);
+    else stopTurnTimer();
+  });
+
+  socket.on('turn_timeout', () => {
+    stopTurnTimer();
+    showToast('Zeit abgelaufen — Zug automatisch beendet!', 'error', 3000);
+  });
 
   bindButtons();
 }
@@ -123,7 +134,16 @@ function handleTerritoryClick(territoryId) {
 
   if (phase === 'setup') {
     if (terrState.owner !== myPlayerId) { showToast('Nicht dein Gebiet!', 'error'); return; }
-    sendAction('deploy_setup', { territoryId });
+    // Show territory selected + Platzieren button
+    setSelectedTerritory(territoryId);
+    selectedFrom = territoryId;
+    const myPlayer = state.players.find(p => p.id === myPlayerId);
+    const toPlace = myPlayer?.troops || myPlayer?.troopsToPlace || 1;
+    showDeployControl(Math.max(1, toPlace), count => {
+      for (let i = 0; i < count; i++) sendAction('deploy_setup', { territoryId });
+      hideDeployControl();
+      clearSelection();
+    });
     return;
   }
 
@@ -394,6 +414,58 @@ function clearSelection() {
   showWinChanceArea(false);
 }
 
+
+// ── TURN TIMER ────────────────────────────────────────────────────────────────
+
+function startTurnTimer(seconds) {
+  stopTurnTimer();
+  const bar = $('turnTimerBar');
+  const fill = $('timerFill');
+  const label = $('timerLabel');
+  if (!bar || !fill || !label) return;
+
+  bar.style.display = '';
+  let remaining = seconds;
+
+  fill.style.transition = 'none';
+  fill.style.width = '100%';
+  label.textContent = `${remaining}s`;
+
+  setTimeout(() => {
+    fill.style.transition = `width ${seconds}s linear`;
+    fill.style.width = '0%';
+  }, 50);
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    label.textContent = `${remaining}s`;
+    if (remaining <= 10) label.style.color = 'var(--danger)';
+    if (remaining <= 0) stopTurnTimer();
+  }, 1000);
+}
+
+function stopTurnTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  const bar = $('turnTimerBar');
+  if (bar) bar.style.display = 'none';
+}
+
+// ── MISSING UI HELPERS ────────────────────────────────────────────────────────
+
+function showWinChance(pct, detail) {
+  const area = $('winChanceArea');
+  const pctEl = $('winChancePct');
+  const fillEl = $('winChanceFill');
+  const detailEl = $('winChanceDetail');
+  if (!area) return;
+  area.style.display = '';
+  if (pctEl) pctEl.textContent = `${pct}%`;
+  if (fillEl) {
+    fillEl.style.width = `${pct}%`;
+    fillEl.style.background = pct >= 60 ? 'var(--success)' : pct >= 40 ? 'var(--warning)' : 'var(--danger)';
+  }
+  if (detailEl) detailEl.textContent = detail || '';
+}
 
 // ── START ─────────────────────────────────────────────────────────────────────
 

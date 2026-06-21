@@ -85,6 +85,36 @@
   pointer-events: none;
 }
 
+/* ── TURN TIMER ── */
+.turn-timer-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(248,81,73,0.08);
+  border-bottom: 1px solid rgba(248,81,73,0.2);
+}
+.timer-track {
+  flex: 1;
+  height: 6px;
+  background: var(--panel2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.timer-fill {
+  height: 100%;
+  background: var(--danger);
+  transition: width 1s linear;
+  border-radius: 3px;
+}
+.timer-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+  min-width: 30px;
+  text-align: right;
+}
+
 /* ── GAME PANEL ── */
 .game-panel {
   width: 300px;

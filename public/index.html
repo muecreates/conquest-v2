@@ -18,6 +18,7 @@
     </header>
 
     <!-- Presets -->
+    <div class="section-label">MODUS</div>
     <div class="presets">
       <button class="preset-btn" data-preset="blitz">
         <span class="preset-icon">⚡</span>
@@ -39,140 +40,149 @@
       </button>
     </div>
 
-    <!-- Map Carousel -->
-    <div class="map-section">
-      <div class="section-label">KARTE WÄHLEN</div>
-      <div class="map-carousel" id="mapCarousel">
-        <div class="map-card active" data-map="koeln">
-          <div class="map-emoji">🏙</div>
-          <div class="map-name">Köln</div>
-          <div class="map-meta">9 T · ~20 Min</div>
+    <!-- Map Selection -->
+    <div class="section-label">KARTE</div>
+    <div class="map-carousel" id="mapCarousel">
+      <div class="map-card" data-map="bikiniBottom" data-territories="9" data-time="15">
+        <div class="map-emoji">🌊</div>
+        <div class="map-name">Bikini Bottom</div>
+        <div class="map-meta">9 T · ~15 Min</div>
+      </div>
+      <div class="map-card active" data-map="koeln" data-territories="9" data-time="20">
+        <div class="map-emoji">🏙</div>
+        <div class="map-name">Köln</div>
+        <div class="map-meta">9 T · ~20 Min</div>
+      </div>
+      <div class="map-card" data-map="marbella" data-territories="11" data-time="20">
+        <div class="map-emoji">🌴</div>
+        <div class="map-name">Marbella</div>
+        <div class="map-meta">11 T · ~20 Min</div>
+      </div>
+      <div class="map-card" data-map="sanandreas" data-territories="12" data-time="30">
+        <div class="map-emoji">🎮</div>
+        <div class="map-name">GTA San Andreas</div>
+        <div class="map-meta">12 T · ~30 Min</div>
+      </div>
+      <div class="map-card" data-map="germany" data-territories="16" data-time="25">
+        <div class="map-emoji">🇩🇪</div>
+        <div class="map-name">Deutschland</div>
+        <div class="map-meta">16 T · ~25 Min</div>
+      </div>
+      <div class="map-card" data-map="africa" data-territories="22" data-time="35">
+        <div class="map-emoji">🦁</div>
+        <div class="map-name">Afrika</div>
+        <div class="map-meta">22 T · ~35 Min</div>
+      </div>
+      <div class="map-card" data-map="europe" data-territories="29" data-time="40">
+        <div class="map-emoji">🌍</div>
+        <div class="map-name">Europa</div>
+        <div class="map-meta">29 T · ~40 Min</div>
+      </div>
+      <div class="map-card" data-map="world" data-territories="42" data-time="75">
+        <div class="map-emoji">🌐</div>
+        <div class="map-name">Weltmap</div>
+        <div class="map-meta">42 T · ~75 Min</div>
+      </div>
+    </div>
+
+    <!-- Settings Row -->
+    <div class="settings-row">
+      <div class="setting-block">
+        <div class="setting-label">TRUPPENVERTEILUNG</div>
+        <div class="toggle-group" id="territorySetup">
+          <button class="tgl active" data-val="auto">Auto</button>
+          <button class="tgl" data-val="draft">Klassisch-Draft</button>
         </div>
-        <div class="map-card" data-map="marbella">
-          <div class="map-emoji">🌴</div>
-          <div class="map-name">Marbella</div>
-          <div class="map-meta">11 T · ~20 Min</div>
+      </div>
+      <div class="setting-block">
+        <div class="setting-label">KARTEN</div>
+        <div class="toggle-group" id="cardMode">
+          <button class="tgl active" data-val="classic">An</button>
+          <button class="tgl" data-val="none">Aus</button>
         </div>
-        <div class="map-card" data-map="germany">
-          <div class="map-emoji">🇩🇪</div>
-          <div class="map-name">Deutschland</div>
-          <div class="map-meta">16 T · ~25 Min</div>
-        </div>
-        <div class="map-card" data-map="europe">
-          <div class="map-emoji">🌍</div>
-          <div class="map-name">Europa</div>
-          <div class="map-meta">28 T · ~40 Min</div>
-        </div>
-        <div class="map-card" data-map="africa">
-          <div class="map-emoji">🦁</div>
-          <div class="map-name">Afrika</div>
-          <div class="map-meta">20 T · ~35 Min</div>
-        </div>
-        <div class="map-card" data-map="world">
-          <div class="map-emoji">🌐</div>
-          <div class="map-name">Weltmap</div>
-          <div class="map-meta">42 T · ~75 Min</div>
+      </div>
+      <div class="setting-block">
+        <div class="setting-label">GEFECHT</div>
+        <div class="toggle-group" id="combatMode">
+          <button class="tgl active" data-val="classic">Klassisch</button>
+          <button class="tgl" data-val="blitz">Blitz</button>
         </div>
       </div>
     </div>
 
-    <!-- Player name -->
+    <!-- More Settings -->
+    <div class="settings-row">
+      <div class="setting-block">
+        <div class="setting-label">SPIELER</div>
+        <div class="toggle-group" id="playerCount">
+          <button class="tgl" data-val="2">2</button>
+          <button class="tgl active" data-val="3">3</button>
+          <button class="tgl" data-val="4">4</button>
+          <button class="tgl" data-val="5">5</button>
+          <button class="tgl" data-val="6">6</button>
+        </div>
+      </div>
+      <div class="setting-block">
+        <div class="setting-label">KI-LEVEL</div>
+        <div class="toggle-group" id="aiLevel">
+          <button class="tgl" data-val="easy">Leicht</button>
+          <button class="tgl active" data-val="medium">Mittel</button>
+          <button class="tgl" data-val="hard">Schwer</button>
+        </div>
+      </div>
+      <div class="setting-block">
+        <div class="setting-label">SIEG</div>
+        <div class="toggle-group" id="victoryThreshold">
+          <button class="tgl" data-val="40">40%</button>
+          <button class="tgl active" data-val="50">50%</button>
+          <button class="tgl" data-val="100">100%</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- More toggles (compact) -->
+    <div class="settings-row">
+      <div class="setting-block">
+        <div class="setting-label">💥 SPECIAL CARDS</div>
+        <div class="toggle-group" id="specialCards">
+          <button class="tgl active" data-val="true">An</button>
+          <button class="tgl" data-val="false">Aus</button>
+        </div>
+      </div>
+      <div class="setting-block">
+        <div class="setting-label">💀 LETZTE CHANCE</div>
+        <div class="toggle-group" id="lastChance">
+          <button class="tgl active" data-val="true">An</button>
+          <button class="tgl" data-val="false">Aus</button>
+        </div>
+      </div>
+      <div class="setting-block">
+        <div class="setting-label">⏱ ZUG-TIMER (MP)</div>
+        <div class="toggle-group" id="turnTimer">
+          <button class="tgl" data-val="30">30s</button>
+          <button class="tgl active" data-val="60">60s</button>
+          <button class="tgl" data-val="120">120s</button>
+          <button class="tgl" data-val="0">Aus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Estimate -->
+    <div class="time-estimate">
+      <span class="te-icon">⏱</span>
+      <span class="te-label">Spielzeit-Schätzung:</span>
+      <span class="te-value" id="timeEstimate">ca. 30-45 Min</span>
+    </div>
+
+    <!-- Player Name -->
     <div class="name-row">
       <input type="text" id="playerName" placeholder="Dein Name" maxlength="20" autocomplete="off">
     </div>
 
     <!-- Main Buttons -->
     <div class="main-buttons">
-      <button class="btn-sp btn-primary" id="spBtn">👤 SINGLEPLAYER</button>
+      <button class="btn-sp btn-primary" id="spBtn">👤 SINGLEPLAYER STARTEN</button>
       <button class="btn-mp btn-secondary" id="mpBtn">🌐 MULTIPLAYER</button>
-    </div>
-
-    <!-- Advanced Settings -->
-    <div class="adv-toggle" id="advToggle">▼ Erweiterte Einstellungen</div>
-    <div class="adv-panel" id="advPanel" style="display:none">
-      <div class="adv-grid">
-
-        <div class="adv-row">
-          <span class="adv-label">Spieler</span>
-          <div class="toggle-group" id="playerCount">
-            <button class="tgl active" data-val="2">2</button>
-            <button class="tgl" data-val="3">3</button>
-            <button class="tgl" data-val="4">4</button>
-            <button class="tgl" data-val="5">5</button>
-            <button class="tgl" data-val="6">6</button>
-          </div>
-        </div>
-
-        <div class="adv-row">
-          <span class="adv-label">KI-Level</span>
-          <div class="toggle-group" id="aiLevel">
-            <button class="tgl" data-val="easy">Leicht</button>
-            <button class="tgl active" data-val="medium">Mittel</button>
-            <button class="tgl" data-val="hard">Schwer</button>
-          </div>
-        </div>
-
-        <div class="adv-row">
-          <span class="adv-label">Gefecht</span>
-          <div class="toggle-group" id="combatMode">
-            <button class="tgl active" data-val="classic">Klassisch</button>
-            <button class="tgl" data-val="balanced">Balanced</button>
-            <button class="tgl" data-val="aggressive">Aggressiv</button>
-            <button class="tgl" data-val="blitz">Blitz</button>
-          </div>
-        </div>
-
-        <div class="adv-row">
-          <span class="adv-label">Karten</span>
-          <div class="toggle-group" id="cardMode">
-            <button class="tgl active" data-val="classic">Eskalation</button>
-            <button class="tgl" data-val="fixed">Fester Wert</button>
-            <button class="tgl" data-val="none">Keine</button>
-          </div>
-        </div>
-
-        <div class="adv-row">
-          <span class="adv-label">💥 Special Cards</span>
-          <div class="toggle-group" id="specialCards">
-            <button class="tgl active" data-val="true">AN</button>
-            <button class="tgl" data-val="false">AUS</button>
-          </div>
-        </div>
-
-        <div class="adv-row">
-          <span class="adv-label">Setup</span>
-          <div class="toggle-group" id="territorySetup">
-            <button class="tgl active" data-val="auto">Auto Balanced</button>
-            <button class="tgl" data-val="random">Zufällig</button>
-            <button class="tgl" data-val="draft">Draft</button>
-          </div>
-        </div>
-
-        <div class="adv-row">
-          <span class="adv-label">Sieg</span>
-          <div class="toggle-group" id="victoryThreshold">
-            <button class="tgl" data-val="40">40% Schnell</button>
-            <button class="tgl active" data-val="50">50% Mehrheit</button>
-            <button class="tgl" data-val="100">100% Dominanz</button>
-          </div>
-        </div>
-
-        <div class="adv-row">
-          <span class="adv-label">💀 Letzte Chance</span>
-          <div class="toggle-group" id="lastChance">
-            <button class="tgl active" data-val="true">AN</button>
-            <button class="tgl" data-val="false">AUS</button>
-          </div>
-          <div class="toggle-group" id="lastChanceTrigger" style="margin-left:8px">
-            <button class="tgl" data-val="2">2</button>
-            <button class="tgl active" data-val="3">3</button>
-            <button class="tgl" data-val="4">4</button>
-            <button class="tgl" data-val="5">5</button>
-          </div>
-          <span class="adv-sub">Gebiete</span>
-        </div>
-
-      </div>
     </div>
   </div>
 </div>
@@ -197,8 +207,11 @@
         <div class="rc-code" id="mpRoomCode">----</div>
       </div>
       <div id="qrContainer" style="text-align:center; margin:16px 0"></div>
-      <div class="mp-players" id="mpPlayerList"></div>
-      <button class="btn-secondary mp-ai-btn" id="mpAddAI">+ KI hinzufügen</button>
+
+      <!-- Player slots with Human/Bot toggle -->
+      <div class="section-label" style="margin-top:16px">SPIELER-SLOTS</div>
+      <div class="mp-slots" id="mpSlots"></div>
+
       <button class="btn-primary mp-start-btn" id="mpStartBtn" disabled>▶ SPIEL STARTEN</button>
     </div>
 
@@ -215,6 +228,7 @@
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="js/lobby.js"></script>
 </body>
 </html>

@@ -10,9 +10,26 @@
 </head>
 <body>
 <div class="game-layout">
-  <!-- MAP AREA -->
-  <div class="map-area">
-    <svg id="game-map" xmlns="http://www.w3.org/2000/svg"></svg>
+  <!-- MAP + BOTTOM DEPLOY PANEL -->
+  <div class="map-column">
+    <div class="map-area">
+      <svg id="game-map" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <!-- BOTTOM DEPLOY PANEL (visible when territory selected in setup/draft) -->
+    <div class="deploy-bottom-panel" id="deployBottomPanel" style="display:none">
+      <div class="dbp-territory">
+        <div class="dbp-name" id="dbpName">Territorium</div>
+        <div class="dbp-troops" id="dbpTroops">0 Truppen</div>
+      </div>
+      <div class="dbp-controls">
+        <button class="dbp-btn-minus" id="dbpMinus">−</button>
+        <input type="range" id="dbpSlider" min="1" max="10" value="1">
+        <span class="dbp-count" id="dbpCount">1</span>
+        <button class="dbp-btn-plus" id="dbpPlus">+</button>
+      </div>
+      <button class="dbp-confirm" id="dbpConfirm">PLATZIEREN ✓</button>
+    </div>
   </div>
 
   <!-- GAME PANEL -->

@@ -333,3 +333,18 @@
 .btn-back:hover { border-color: var(--accent); color: var(--accent); }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+
+/* ── MOBILE ── */
+@media (max-width: 640px) {
+  .lobby-wrap { padding: 16px 12px 32px; }
+  .lby-title { font-size: 20px; }
+  .presets { grid-template-columns: 1fr; gap: 8px; }
+  .map-carousel { gap: 8px; }
+  .map-card { flex: 0 0 110px; padding: 10px 8px; }
+  .main-buttons { grid-template-columns: 1fr; }
+  .btn-sp, .btn-mp { min-height: 48px; font-size: 14px; }
+  .settings-row { flex-direction: column; gap: 12px; }
+  .setting-block { min-width: unset; }
+  .tgl { min-height: 36px; min-width: 44px; }
+  .rc-code { font-size: 36px; letter-spacing: 8px; }
+}

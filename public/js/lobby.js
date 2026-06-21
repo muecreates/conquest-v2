@@ -90,6 +90,28 @@ function initMapCarousel() {
       updateTimeEstimate();
     });
   });
+
+  // Load map thumbnails from API
+  loadMapThumbnails();
+}
+
+async function loadMapThumbnails() {
+  try {
+    const resp = await fetch('/api/map-thumbs');
+    if (!resp.ok) return;
+    const thumbs = await resp.json();
+    for (const [mapId, svgStr] of Object.entries(thumbs)) {
+      const card = document.querySelector(`.map-card[data-map="${mapId}"]`);
+      if (!card) continue;
+      const emojiEl = card.querySelector('.map-emoji');
+      if (emojiEl && svgStr) {
+        emojiEl.innerHTML = svgStr;
+        emojiEl.style.cssText = 'display:flex;align-items:center;justify-content:center;width:60px;height:40px';
+      }
+    }
+  } catch(e) {
+    // Thumbnails failed — keep emojis
+  }
 }
 
 // ── TIME ESTIMATE (Step 8) ─────────────────────────────────────────────────

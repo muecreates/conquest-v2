@@ -136,10 +136,9 @@ function handleTerritoryClick(territoryId) {
     if (terrState.owner !== myPlayerId) { showToast('Nicht dein Gebiet!', 'error'); return; }
     setSelectedTerritory(territoryId);
     selectedFrom = territoryId;
-    // Show confirm button for 1 troop
-    showDeployControl(1, () => {
+    showDeployBottomPanel(territory.name, terrState.troops, 1, () => {
       sendAction('deploy_setup', { territoryId });
-      hideDeployControl();
+      hideDeployBottomPanel();
       clearSelection();
     });
     return;
@@ -151,10 +150,9 @@ function handleTerritoryClick(territoryId) {
 
     setSelectedTerritory(territoryId);
     selectedFrom = territoryId;
-
-    showDeployControl(myPlayer.troopsToPlace, count => {
+    showDeployBottomPanel(territory.name, terrState.troops, myPlayer.troopsToPlace, count => {
       sendAction('deploy', { territoryId, count });
-      hideDeployControl();
+      hideDeployBottomPanel();
     });
     showWinChanceArea(false);
     return;
@@ -406,12 +404,57 @@ function clearSelection() {
   setSelectedTerritory(null);
   setHighlightedTerritories([]);
   hideDeployControl();
+  hideDeployBottomPanel();
   hideTerritorySidebar();
   showAttackButtons(false);
   showFortifyButton(false);
   showWinChanceArea(false);
 }
 
+
+// ── BOTTOM DEPLOY PANEL ───────────────────────────────────────────────────────
+
+let _deployCallback = null;
+
+function showDeployBottomPanel(terrName, currentTroops, maxDeploy, callback) {
+  _deployCallback = callback;
+  const panel = $('deployBottomPanel');
+  const nameEl = $('dbpName');
+  const troopsEl = $('dbpTroops');
+  const slider = $('dbpSlider');
+  const count = $('dbpCount');
+  const minus = $('dbpMinus');
+  const plus = $('dbpPlus');
+  const confirm = $('dbpConfirm');
+  if (!panel) return;
+
+  nameEl.textContent = terrName;
+  troopsEl.textContent = `${currentTroops} Truppen aktuell`;
+  slider.min = 1;
+  slider.max = Math.max(1, maxDeploy);
+  slider.value = maxDeploy === 1 ? 1 : Math.min(1, maxDeploy);
+  count.textContent = slider.value;
+
+  // Hide slider if only 1 to place
+  const showSlider = maxDeploy > 1;
+  slider.style.display = showSlider ? '' : 'none';
+  minus.style.display = showSlider ? '' : 'none';
+  plus.style.display = showSlider ? '' : 'none';
+  count.textContent = showSlider ? slider.value : 1;
+
+  slider.oninput = () => { count.textContent = slider.value; };
+  minus.onclick = () => { if (parseInt(slider.value) > 1) { slider.value--; count.textContent = slider.value; } };
+  plus.onclick = () => { if (parseInt(slider.value) < maxDeploy) { slider.value++; count.textContent = slider.value; } };
+  confirm.onclick = () => { if (_deployCallback) { _deployCallback(parseInt(slider.value)); _deployCallback = null; } };
+
+  panel.style.display = 'flex';
+}
+
+function hideDeployBottomPanel() {
+  const panel = $('deployBottomPanel');
+  if (panel) panel.style.display = 'none';
+  _deployCallback = null;
+}
 
 // ── TURN TIMER ────────────────────────────────────────────────────────────────
 

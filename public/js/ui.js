@@ -136,6 +136,7 @@ function updateCardsUI(hand, phase, isMyTurn, cardMode) {
 
   section.style.display = '';
   if (countEl) countEl.textContent = hand.length;
+  autoExpandCards(hand);
 
   if (!handEl) return;
   handEl.innerHTML = '';
@@ -232,13 +233,23 @@ function showTerritorySidebar(territory, terrState, owner, phase, isMyTurn, myPl
   if (!section) return;
   section.style.display = '';
 
-  setText('selTerrName', territory.name);
+  const nameEl = document.getElementById('selTerrName');
+  if (nameEl) { nameEl.textContent = territory.name; nameEl.style.fontSize = '16px'; nameEl.style.fontWeight = '800'; }
+
   setText('selTerrOwner', owner ? owner.name : 'Neutral');
-  setText('selTerrTroops', `${terrState.troops} Truppen`);
+  setText('selTerrTroops', terrState.troops);
   setText('selTerrContinent', territory.continent);
 
   const ownerEl = document.getElementById('selTerrOwner');
   if (ownerEl && owner) ownerEl.style.color = owner.color;
+
+  // Show troop count prominently
+  const troopsEl = document.getElementById('selTerrTroops');
+  if (troopsEl) {
+    troopsEl.style.fontSize = '20px';
+    troopsEl.style.fontWeight = '900';
+    troopsEl.style.color = 'var(--accent)';
+  }
 }
 
 function showDeployControl(max, callback) {
@@ -323,7 +334,7 @@ function setText(id, val) {
   if (el) el.textContent = val;
 }
 
-// Cards toggle
+// Cards toggle — open by default when cards exist
 document.addEventListener('DOMContentLoaded', () => {
   const toggle = document.getElementById('cardsToggle');
   if (toggle) {
@@ -337,6 +348,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Auto-expand cards panel when cards present
+function autoExpandCards(hand) {
+  const panel = document.getElementById('cardsPanel');
+  const arrow = document.getElementById('cardsArrow');
+  if (hand && hand.length > 0 && panel && panel.style.display === 'none') {
+    panel.style.display = '';
+    if (arrow) arrow.textContent = '▲';
+  }
+}
 
 // ── SPECIAL CARD UI ───────────────────────────────────────────────────────────
 

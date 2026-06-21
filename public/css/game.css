@@ -4,6 +4,15 @@
   overflow: hidden;
 }
 
+/* ── MAP COLUMN ── */
+.map-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 /* ── MAP AREA ── */
 .map-area {
   flex: 1;
@@ -17,38 +26,141 @@
   height: 100%;
 }
 
+/* ── BOTTOM DEPLOY PANEL ── */
+.deploy-bottom-panel {
+  background: var(--panel);
+  border-top: 2px solid var(--accent);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: slideUp 0.2s ease;
+  flex-shrink: 0;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.dbp-territory { flex-shrink: 0; min-width: 140px; }
+.dbp-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.dbp-troops {
+  font-size: 12px;
+  color: var(--sub);
+  margin-top: 2px;
+}
+
+.dbp-controls {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dbp-btn-minus, .dbp-btn-plus {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.dbp-btn-minus:hover, .dbp-btn-plus:hover { border-color: var(--accent); color: var(--accent); }
+
+#dbpSlider {
+  flex: 1;
+  padding: 0;
+  height: 6px;
+  accent-color: var(--accent);
+}
+
+.dbp-count {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent);
+  min-width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dbp-confirm {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 800;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  min-height: 48px;
+}
+.dbp-confirm:hover { background: var(--accent2); transform: scale(1.02); }
+.dbp-confirm:active { transform: scale(0.98); }
+
 .territory-path {
   cursor: pointer;
-  stroke: #0a1628;
-  stroke-width: 1.5px;
   stroke-linejoin: round;
   paint-order: stroke fill;
-  transition: filter 0.15s, stroke 0.15s, stroke-width 0.15s;
+  transition: filter 0.15s, stroke-width 0.15s, fill-opacity 0.2s;
 }
 
 .territory-path:hover {
-  filter: brightness(1.35);
-  stroke: rgba(255,255,255,0.7);
-  stroke-width: 1.5px;
+  filter: brightness(1.4) saturate(1.2);
+  stroke-width: 2.5px !important;
+  stroke-opacity: 1 !important;
 }
 
 .territory-path.selected {
-  stroke: #fff;
-  stroke-width: 2.5px;
-  filter: brightness(1.4) drop-shadow(0 0 6px rgba(255,255,255,0.5));
+  stroke: #ffffff !important;
+  stroke-width: 3px !important;
+  stroke-opacity: 1 !important;
+  filter: brightness(1.5) drop-shadow(0 0 8px rgba(255,255,255,0.4));
 }
 
 .territory-path.attackable {
-  stroke: #f85149;
-  stroke-width: 2px;
-  animation: pulse 1.2s ease-in-out infinite;
+  stroke: #f85149 !important;
+  stroke-width: 2.5px !important;
+  stroke-opacity: 1 !important;
+  animation: pulse-border 1.2s ease-in-out infinite;
 }
 
 .territory-path.fortifiable {
-  stroke: #3fb950;
-  stroke-width: 2px;
-  animation: pulse 1.2s ease-in-out infinite;
+  stroke: #3fb950 !important;
+  stroke-width: 2.5px !important;
+  stroke-opacity: 1 !important;
+  animation: pulse-border 1.2s ease-in-out infinite;
 }
+
+@keyframes pulse-border {
+  0%,100% { filter: brightness(1); }
+  50% { filter: brightness(1.4); }
+}
+
+.bubble-text {
+  fill: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.troop-bubble { pointer-events: none; }
 
 .territory-label {
   pointer-events: none;
@@ -57,24 +169,6 @@
   text-anchor: middle;
   dominant-baseline: middle;
   fill: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.9));
-}
-
-.troop-bubble {
-  pointer-events: none;
-}
-.troop-bubble circle {
-  fill: rgba(0,0,0,0.65);
-  stroke: rgba(255,255,255,0.3);
-  stroke-width: 1px;
-}
-.troop-bubble text {
-  fill: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  text-anchor: middle;
-  dominant-baseline: middle;
 }
 
 /* Cross-connection lines */
@@ -429,3 +523,49 @@
 }
 
 /* see overlays.css for tooltip, game-over, toast, combat-modal, last-chance */
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  .game-layout {
+    flex-direction: column;
+  }
+
+  .map-column {
+    flex: 0 0 60vh;
+    max-height: 60vh;
+  }
+
+  .map-area {
+    height: 100%;
+  }
+
+  .game-panel {
+    width: 100%;
+    min-width: unset;
+    max-height: 40vh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    overflow-y: auto;
+  }
+
+  .deploy-bottom-panel {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .dbp-territory { min-width: unset; flex: 1 1 100%; }
+  .dbp-controls { flex: 1; min-width: 0; }
+  .dbp-confirm { flex: 0 0 auto; min-height: 44px; }
+  .dbp-btn-minus, .dbp-btn-plus { min-width: 44px; min-height: 44px; }
+
+  /* Bigger touch targets */
+  .action-buttons button { min-height: 44px; font-size: 14px; }
+  .tgl { min-height: 36px; padding: 6px 12px; }
+}
+
+@media (max-width: 480px) {
+  .game-panel { font-size: 12px; }
+  .current-player-name { font-size: 13px; }
+  .troop-stat .count { font-size: 18px; }
+  .panel-section { padding: 10px 12px; }
+}

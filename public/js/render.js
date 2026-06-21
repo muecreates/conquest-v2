@@ -6,14 +6,6 @@ let selectedTerritoryId = null;
 let highlightedTerritories = new Set();
 let onTerritoryClick = null;
 
-const CONTINENT_BORDER_COLORS = {
-  north_america: '#e8a87c', south_america: '#82c785',
-  europe: '#7eb8d4', africa: '#d4a84b',
-  asia: '#c47eb4', australia: '#e87c7c',
-  north: '#7eb8d4', west: '#82c785', central: '#e8a87c',
-  south: '#d4a84b', east: '#c47eb4'
-};
-
 function initMap(map, state, clickHandler) {
   mapData = map;
   gameState = state;
@@ -29,95 +21,135 @@ function updateMapState(state) {
 function renderMap() {
   const svg = document.getElementById('game-map');
   svg.innerHTML = '';
-  const vb = mapData.viewBox || `0 0 ${mapData.width || 800} ${mapData.height || 600}`;
+  const vb = mapData.viewBox || '0 0 960 600';
   svg.setAttribute('viewBox', vb);
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
   // Background
-  const bg = createEl('rect', { x: 0, y: 0, width: 9999, height: 9999, fill: '#0a1628' });
-  svg.appendChild(bg);
+  svg.appendChild(createEl('rect', { x: 0, y: 0, width: 9999, height: 9999, fill: '#0a1628' }));
 
-  // Draw cross-connections first
+  // Grid overlay (subtle)
+  const defs = createEl('defs', {});
+  const pattern = createEl('pattern', { id: 'grid', width: '40', height: '40', patternUnits: 'userSpaceOnUse' });
+  pattern.appendChild(createEl('path', { d: 'M 40 0 L 0 0 0 40', fill: 'none', stroke: '#161b22', 'stroke-width': '0.5' }));
+  defs.appendChild(pattern);
+  svg.appendChild(defs);
+  svg.appendChild(createEl('rect', { width: 9999, height: 9999, fill: 'url(#grid)', opacity: '0.4' }));
+
+  // Cross-connections
   const linesGroup = createEl('g', { id: 'cross-lines' });
   for (const cc of (mapData.crossConnections || [])) {
     const from = mapData.territories.find(t => t.id === cc.from);
     const to = mapData.territories.find(t => t.id === cc.to);
     if (!from || !to) continue;
-    // If from is on the right side and to is on the left (Alaska↔Kamchatka), draw arc
-    if (Math.abs(from.labelX - to.labelX) > (mapData.width || 700) * 0.5) {
-      // Cross-edge connection: two short lines to map edge
-      const vbW = parseInt((mapData.viewBox || '0 0 860 540').split(' ')[2]) || 860;
+    const vbW = parseInt(vb.split(' ')[2]) || 960;
+    if (Math.abs(from.labelX - to.labelX) > vbW * 0.5) {
       const midY = (from.labelY + to.labelY) / 2;
-      const p1 = createEl('path', {
-        d: `M ${from.labelX},${from.labelY} Q ${vbW + 20},${midY - 30} ${vbW},${midY}`,
-        fill: 'none', class: 'cross-line'
-      });
-      const p2 = createEl('path', {
-        d: `M ${to.labelX},${to.labelY} Q ${-20},${midY - 30} 0,${midY}`,
-        fill: 'none', class: 'cross-line'
-      });
-      linesGroup.appendChild(p1);
-      linesGroup.appendChild(p2);
+      linesGroup.appendChild(createEl('path', { d: `M ${from.labelX},${from.labelY} Q ${vbW+20},${midY-30} ${vbW},${midY}`, fill: 'none', class: 'cross-line' }));
+      linesGroup.appendChild(createEl('path', { d: `M ${to.labelX},${to.labelY} Q -20,${midY-30} 0,${midY}`, fill: 'none', class: 'cross-line' }));
     } else {
-      const line = createEl('line', {
-        x1: from.labelX, y1: from.labelY,
-        x2: to.labelX, y2: to.labelY,
-        class: 'cross-line'
-      });
-      linesGroup.appendChild(line);
+      linesGroup.appendChild(createEl('line', { x1: from.labelX, y1: from.labelY, x2: to.labelX, y2: to.labelY, class: 'cross-line' }));
     }
   }
   svg.appendChild(linesGroup);
 
-  // Territory group
+  // Territory paths (one group per continent for z-ordering)
   const terrGroup = createEl('g', { id: 'territories' });
   svg.appendChild(terrGroup);
 
-  // Labels group
+  // Label group (troop bubbles)
   const labelGroup = createEl('g', { id: 'labels' });
   svg.appendChild(labelGroup);
 
+  // Continent labels group (on top, no pointer events)
+  const contLabelGroup = createEl('g', { id: 'cont-labels', style: 'pointer-events:none' });
+  svg.appendChild(contLabelGroup);
+
   for (const t of mapData.territories) {
     renderTerritory(t, terrGroup, labelGroup);
+  }
+
+  // Draw continent labels
+  if (mapData.continents) {
+    renderContinentLabels(contLabelGroup);
   }
 
   setupMapTooltip(svg);
 }
 
 function renderTerritory(t, terrGroup, labelGroup) {
-  const state = gameState;
-  const terrState = state?.territories?.[t.id] || { owner: null, troops: 0 };
+  const terrState = gameState?.territories?.[t.id] || { owner: null, troops: 0 };
+  const owner = gameState?.players?.find(p => p.id === terrState.owner);
+  const fillColor = owner ? owner.color : '#2d3748';
 
-  // Get player color
-  const owner = state?.players?.find(p => p.id === terrState.owner);
-  const fillColor = owner ? owner.color : '#2d333b';
+  // Get continent color for border
+  const contData = mapData.continents?.[t.continent];
+  const contColor = contData?.color || '#4a5568';
 
-  // Path
   const path = createEl('path', {
-    d: t.svgPath || t.d,
+    d: t.svgPath || t.d || '',
     fill: fillColor,
-    'fill-opacity': '0.75',
+    'fill-opacity': terrState.owner ? '0.72' : '0.35',
+    stroke: contColor,
+    'stroke-width': '1.8',
+    'stroke-linejoin': 'round',
+    'stroke-opacity': '0.85',
+    'paint-order': 'stroke fill',
     class: 'territory-path',
     id: `terr-${t.id}`,
-    'data-id': t.id
+    'data-id': t.id,
+    'data-continent': t.continent
   });
 
   path.addEventListener('click', () => handleTerritoryClick(t.id));
   path.addEventListener('mouseenter', e => showTooltip(t, e));
   path.addEventListener('mousemove', e => moveTooltip(e));
   path.addEventListener('mouseleave', hideTooltip);
-
   terrGroup.appendChild(path);
 
   // Troop bubble
   const bubble = createEl('g', { class: 'troop-bubble', id: `bubble-${t.id}` });
-  const circle = createEl('circle', { cx: t.labelX, cy: t.labelY, r: 11 });
-  const text = createEl('text', { x: t.labelX, y: t.labelY, class: '' });
+  const circle = createEl('circle', { cx: t.labelX, cy: t.labelY, r: '13', fill: 'rgba(0,0,0,0.7)', stroke: contColor, 'stroke-width': '1.5' });
+  const text = createEl('text', { x: t.labelX, y: t.labelY, class: 'bubble-text' });
   text.textContent = terrState.troops || '0';
-
   bubble.appendChild(circle);
   bubble.appendChild(text);
   labelGroup.appendChild(bubble);
+}
+
+function renderContinentLabels(group) {
+  const continents = mapData.continents || {};
+  const vbParts = (mapData.viewBox || '0 0 960 600').split(' ');
+  const vbW = parseFloat(vbParts[2]) || 960;
+  const vbH = parseFloat(vbParts[3]) || 600;
+
+  for (const [contId, cont] of Object.entries(continents)) {
+    const terrs = cont.territories || [];
+    // Compute centroid of all label positions for this continent
+    const pts = terrs.map(tid => {
+      const t = mapData.territories.find(x => x.id === tid);
+      return t ? [t.labelX, t.labelY] : null;
+    }).filter(Boolean);
+    if (!pts.length) continue;
+    const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+    const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+
+    const label = createEl('text', {
+      x: cx, y: cy,
+      'text-anchor': 'middle',
+      'dominant-baseline': 'middle',
+      fill: cont.color || '#fff',
+      'fill-opacity': '0.18',
+      'font-size': Math.max(16, Math.min(28, vbW / 40)),
+      'font-weight': '900',
+      'font-family': 'monospace',
+      'letter-spacing': '2',
+      'text-transform': 'uppercase',
+      style: 'pointer-events:none; user-select:none; text-transform:uppercase'
+    });
+    label.textContent = (cont.name || contId).toUpperCase();
+    group.appendChild(label);
+  }
 }
 
 function refreshTerritories() {
@@ -126,12 +158,12 @@ function refreshTerritories() {
   for (const t of mapData.territories) {
     const terrState = gameState.territories[t.id] || { owner: null, troops: 0 };
     const owner = gameState.players?.find(p => p.id === terrState.owner);
-    const fillColor = owner ? owner.color : '#2d333b';
+    const fillColor = owner ? owner.color : '#2d3748';
 
     const path = document.getElementById(`terr-${t.id}`);
     if (path) {
       path.setAttribute('fill', fillColor);
-      path.setAttribute('fill-opacity', terrState.owner ? '0.75' : '0.4');
+      path.setAttribute('fill-opacity', terrState.owner ? '0.72' : '0.35');
     }
 
     const bubble = document.getElementById(`bubble-${t.id}`);
@@ -161,10 +193,9 @@ function setSelectedTerritory(id) {
 }
 
 function setHighlightedTerritories(ids, type = 'attackable') {
-  // Clear previous
   for (const id of highlightedTerritories) {
     const el = document.getElementById(`terr-${id}`);
-    if (el) { el.classList.remove('attackable', 'fortifiable'); }
+    if (el) el.classList.remove('attackable', 'fortifiable');
   }
   highlightedTerritories = new Set(ids);
   for (const id of ids) {
@@ -191,7 +222,7 @@ function flashTerritory(id, className = 'selected', duration = 500) {
   setTimeout(() => el.classList.remove(className), duration);
 }
 
-// ── TOOLTIP ───────────────────────────────────────────────────────────────────
+// ── TOOLTIP ──────────────────────────────────────────────────────────────────
 
 function setupMapTooltip(svg) {
   svg.addEventListener('mouseleave', hideTooltip);
@@ -199,9 +230,10 @@ function setupMapTooltip(svg) {
 
 function showTooltip(territory, e) {
   const tooltip = document.getElementById('mapTooltip');
+  if (!tooltip) return;
   const terrState = gameState?.territories?.[territory.id] || {};
   const owner = gameState?.players?.find(p => p.id === terrState.owner);
-  const contName = mapData.continents[territory.continent]?.name || territory.continent;
+  const contName = mapData.continents?.[territory.continent]?.name || territory.continent;
 
   document.getElementById('tooltipName').textContent = territory.name;
   document.getElementById('tooltipOwner').textContent = owner ? owner.name : 'Neutral';
@@ -215,9 +247,9 @@ function showTooltip(territory, e) {
 
 function moveTooltip(e) {
   const tooltip = document.getElementById('mapTooltip');
+  if (!tooltip) return;
   tooltip.style.left = (e.clientX + 12) + 'px';
   tooltip.style.top = (e.clientY - 10) + 'px';
-
   const rect = tooltip.getBoundingClientRect();
   if (rect.right > window.innerWidth - 10) {
     tooltip.style.left = (e.clientX - rect.width - 12) + 'px';
@@ -225,7 +257,8 @@ function moveTooltip(e) {
 }
 
 function hideTooltip() {
-  document.getElementById('mapTooltip').classList.remove('visible');
+  const el = document.getElementById('mapTooltip');
+  if (el) el.classList.remove('visible');
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────

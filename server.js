@@ -20,6 +20,57 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/maps', (_, res) => res.json(getAvailableMaps()));
 app.get('/health', (_, res) => res.json({ status: 'ok', version: '2.0.0' }));
 
+// Map thumbnail SVGs (miniaturized outlines)
+app.get('/api/map-thumbs', (_, res) => {
+  const { getMap } = require('./engine/maps/mapLoader');
+  const maps = ['world','europe','africa','germany','koeln','marbella','sanandreas','bikiniBottom'];
+  const thumbs = {};
+  for (const id of maps) {
+    try {
+      const map = getMap(id);
+      thumbs[id] = buildThumbSVG(map);
+    } catch(e) { thumbs[id] = ''; }
+  }
+  res.json(thumbs);
+});
+
+function buildThumbSVG(map) {
+  const vb = (map.viewBox || '0 0 960 600').split(' ');
+  const vW = parseFloat(vb[2]) || 960;
+  const vH = parseFloat(vb[3]) || 600;
+  const W = 60, H = 40;
+  const contColors = {};
+  for (const [id, c] of Object.entries(map.continents || {})) {
+    for (const tid of (c.territories || [])) contColors[tid] = c.color || '#4a5568';
+  }
+
+  // Use simplified approach: just circles at territory label positions
+  // For small maps (<20 territories), try to use paths but with heavy simplification
+  const terrs = map.territories;
+  let content = '';
+
+  if (terrs.length <= 16) {
+    // Short paths: take first 30 coords only
+    content = terrs.map(t => {
+      const d = t.svgPath || t.d || '';
+      if (!d) return '';
+      // Take only the first 200 chars of path (rough shape)
+      const shortD = d.length > 300 ? d.substring(0, 300).replace(/\s[LlCcQqAa][^MLZ]*$/, ' Z') : d;
+      const color = contColors[t.id] || '#4a5568';
+      return `<path d="${shortD}" fill="${color}" fill-opacity="0.75" stroke="#0a1628" stroke-width="${vW/150}"/>`;
+    }).join('');
+  } else {
+    // Large maps: dots only
+    const r = Math.max(4, vW / 80);
+    content = terrs.map(t => {
+      const color = contColors[t.id] || '#4a5568';
+      return `<circle cx="${t.labelX}" cy="${t.labelY}" r="${r}" fill="${color}" fill-opacity="0.85"/>`;
+    }).join('');
+  }
+
+  return `<svg viewBox="${vb[0]} ${vb[1]} ${vW} ${vH}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;border-radius:3px;background:#0a1628">${content}</svg>`;
+}
+
 const rooms = new Map();
 const PLAYER_COLORS = ['#2d5c8e','#8e2d2d','#2d7843','#7a6018','#7a5018','#4a2d8e'];
 const AI_NAMES = ['Alpha','Bravo','Charlie','Delta','Echo','Foxtrot'];

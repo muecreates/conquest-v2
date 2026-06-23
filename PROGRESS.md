@@ -1,6 +1,6 @@
-## Status: FERTIG — v2.3.0
+## Status: FERTIG — v2.4.0
 
-## Zuletzt abgeschlossen: Map-Qualität + Kontinent-Glow (Schritte 2-3)
+## Zuletzt abgeschlossen: Alle 6 Hauptmaps mit echten Geodaten neu gebaut + neues Design-System
 ## Nächster Schritt: git push origin main → Railway auto-deploy
 
 ## Starten
@@ -57,19 +57,27 @@ conquest-v2/
 
 | Map | Quelle | Qualität |
 |-----|--------|----------|
-| Weltmap (42T) | Risk SVG d-Paths | ✓ Echte Shapes |
-| Europa (29T) | SVG d-Paths | ✓ Echte Shapes |
-| Afrika (24T) | GeoJSON countries.geojson | ✓ Echte Ländergrenzen |
-| Deutschland (16T) | GeoJSON Bundesländer | ✓ Echte Bundesland-Shapes |
-| Köln (9T) | Koelngliederung.svg → skaliert auf 960×600 | ✓ Echte Bezirksgrenzen |
-| Marbella (11T) | Proportionale Polygone | ✓ Erkennbare Viertel-Shapes |
-| San Andreas (12T) | Proportionale SA-Karte Polygone | ✓ LS/SF/LV erkennbar |
-| Bikini Bottom (9T) | Cubic-Bezier organische Shapes | ✓ Organische Formen |
+| Weltmap (42T) | Natural Earth admin0+admin1 (110m/10m), Mercator-Projektion, 800×600 | ✓ Echte Geodaten, Länder/Provinzen zu Risk-Territorien gemerged |
+| Europa (29T) | leakyMirror/map-of-europe europe.geojson, Mercator, 800×600 | ✓ Echte Ländergrenzen, 1 Land = 1 Territory |
+| Deutschland (16T) | isellsoap/deutschlandGeoJSON Bundesländer (4_niedrig), Mercator, 800×600 | ✓ Echte Bundesland-Grenzen |
+| Afrika (24T) | Natural Earth admin0 (110m), Länder zu Regionen gemerged, 800×600 | ✓ Echte Ländergrenzen |
+| Köln (9T) | codeforgermany/click_that_hood cologne.geojson (86 Stadtteile → 9 Stadtbezirke gemerged), 800×600 | ✓ Echte Stadtteilgrenzen |
+| Marbella (11T) | OSM/Nominatim-Koordinaten + reale Gemeindegrenze, Voronoi-Tessellation, 800×600 | ✓ Geografisch korrekte, proportionale Regionen (kein offizielles Verwaltungs-GeoJSON verfügbar) |
+| San Andreas (12T) | Proportionale SA-Karte Polygone | ✓ LS/SF/LV erkennbar (unverändert) |
+| Bikini Bottom (9T) | Cubic-Bezier organische Shapes | ✓ Organische Formen (unverändert) |
 
-## Fix-Schritt 2: Kontinent-Borders + Labels (aktualisiert v2.3.0)
-- Jedes Territory: stroke in Kontinent-Farbe, 2px
-- Kontinent-Grenzen: feGaussianBlur-Glow (6px, helle Farbe, 55% Opazität) hinter Territories die an anderen Kontinenten grenzen
-- lightenHex + isContinentBorder Helpers in render.js
+Build-Pipeline (Python/shapely/pyproj, Skripte nicht im Repo): GeoJSON laden → Länder/Provinzen pro
+Risk-Territory mergen (unary_union) → Web-Mercator-Projektion → Skalierung auf 800×600 → Simplify +
+Inselfilter im SVG-Pixelraum → Pfad-Daten + Label-Zentroid generiert, Adjazenzen/Kontinente/Bonus
+aus dem bisherigen Spieldesign übernommen.
+
+## Fix-Schritt 2: Design-System (v2.4.0)
+- SVG-Hintergrund (Wasser): #1a3a5c
+- Territorien ungeclaimed: #2d4a2d, fill-opacity 1.0
+- Territoriengrenzen: #111111, 1px
+- Kontinentgrenzen: eigenes Overlay nach den Territorien, stroke #f0c040, 3px (isContinentBorder-Helper in render.js)
+- Territoriumslabels: kleine weiße Labels (.territory-label) über jedem Territory, zusätzlich zur Truppen-Bubble
+- Spielerfarben: bei conquered komplett als fill übernommen (fill-opacity 1.0, kein Transparenz-Mix mehr)
 - Selected: weißer 3px stroke
 - Attackable/Fortifiable: pulsierender roter/grüner stroke
 - Kontinent-Labels: zentriertes Text über allen Territories (18% Opacity, uppercase)

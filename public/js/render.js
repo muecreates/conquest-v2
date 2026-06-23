@@ -25,24 +25,14 @@ function renderMap() {
   svg.setAttribute('viewBox', vb);
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-  // Background
-  svg.appendChild(createEl('rect', { x: 0, y: 0, width: 9999, height: 9999, fill: '#0a1628' }));
+  // Background — dunkles Marineblau (Wasser)
+  svg.appendChild(createEl('rect', { x: 0, y: 0, width: 9999, height: 9999, fill: '#1a3a5c' }));
 
-  // Grid overlay (subtle)
   const defs = createEl('defs', {});
-  const pattern = createEl('pattern', { id: 'grid', width: '40', height: '40', patternUnits: 'userSpaceOnUse' });
-  pattern.appendChild(createEl('path', { d: 'M 40 0 L 0 0 0 40', fill: 'none', stroke: '#161b22', 'stroke-width': '0.5' }));
-  defs.appendChild(pattern);
-  // Continent-border glow filter
-  const glowFilter = createEl('filter', { id: 'cont-glow', x: '-40%', y: '-40%', width: '180%', height: '180%' });
-  glowFilter.appendChild(createEl('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: '3', result: 'blur' }));
-  defs.appendChild(glowFilter);
   svg.appendChild(defs);
-  svg.appendChild(createEl('rect', { width: 9999, height: 9999, fill: 'url(#grid)', opacity: '0.4' }));
 
-  // Continent-border glow group (drawn before territories so it sits behind)
-  const glowGroup = createEl('g', { id: 'cont-borders' });
-  svg.appendChild(glowGroup);
+  // Kontinentgrenzen-Overlay (gezeichnet nach den Territorien, siehe unten)
+  const contBorderGroup = createEl('g', { id: 'cont-borders', style: 'pointer-events:none' });
 
   // Cross-connections
   const linesGroup = createEl('g', { id: 'cross-lines' });
@@ -65,17 +55,25 @@ function renderMap() {
   const terrGroup = createEl('g', { id: 'territories' });
   svg.appendChild(terrGroup);
 
-  // Label group (troop bubbles)
+  // Territoriumslabels (Name, klein & weiß) + Truppen-Bubbles
+  const nameLabelGroup = createEl('g', { id: 'name-labels', style: 'pointer-events:none' });
+  svg.appendChild(nameLabelGroup);
   const labelGroup = createEl('g', { id: 'labels' });
   svg.appendChild(labelGroup);
+
+  // Kontinentgrenzen-Overlay liegt über den Territorien
+  svg.appendChild(contBorderGroup);
 
   // Continent labels group (on top, no pointer events)
   const contLabelGroup = createEl('g', { id: 'cont-labels', style: 'pointer-events:none' });
   svg.appendChild(contLabelGroup);
 
   for (const t of mapData.territories) {
-    renderTerritory(t, terrGroup, labelGroup, glowGroup);
+    renderTerritory(t, terrGroup, labelGroup, nameLabelGroup);
   }
+
+  // Kontinentgrenzen als eigenes Overlay zeichnen
+  drawContinentBorders(contBorderGroup);
 
   // Draw continent labels
   if (mapData.continents) {
@@ -85,15 +83,24 @@ function renderMap() {
   setupMapTooltip(svg);
 }
 
-function lightenHex(hex, amount) {
-  if (!hex || !hex.startsWith('#') || hex.length < 7) return hex;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const nr = Math.min(255, Math.round(r + (255 - r) * amount));
-  const ng = Math.min(255, Math.round(g + (255 - g) * amount));
-  const nb = Math.min(255, Math.round(b + (255 - b) * amount));
-  return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
+// Zeichnet die Außengrenze jedes Kontinents als durchgehende gelbe Linie,
+// indem die Territory-Pfade pro Kontinent vereinigt und nur deren Rand gestrokt wird.
+function drawContinentBorders(group) {
+  if (!mapData.continents) return;
+  for (const [contId, cont] of Object.entries(mapData.continents)) {
+    for (const tid of (cont.territories || [])) {
+      const t = mapData.territories.find(x => x.id === tid);
+      if (!t || !isContinentBorder(t)) continue;
+      group.appendChild(createEl('path', {
+        d: t.svgPath || t.d || '',
+        fill: 'none',
+        stroke: '#f0c040',
+        'stroke-width': '3',
+        'stroke-linejoin': 'round',
+        'stroke-opacity': '0.9'
+      }));
+    }
+  }
 }
 
 function isContinentBorder(t) {
@@ -109,37 +116,23 @@ function isContinentBorder(t) {
   return false;
 }
 
-function renderTerritory(t, terrGroup, labelGroup, glowGroup) {
+function renderTerritory(t, terrGroup, labelGroup, nameLabelGroup) {
   const terrState = gameState?.territories?.[t.id] || { owner: null, troops: 0 };
   const owner = gameState?.players?.find(p => p.id === terrState.owner);
-  const fillColor = owner ? owner.color : '#2d3748';
+  // Ungeclaimed: dunkles Olive/Grau-Grün. Conquered: Spielerfarbe komplett.
+  const fillColor = owner ? owner.color : '#2d4a2d';
 
-  // Get continent color for border
   const contData = mapData.continents?.[t.continent];
   const contColor = contData?.color || '#4a5568';
-
-  // Continent-border glow: territories adjacent to a different continent get a glowing halo
-  if (glowGroup && isContinentBorder(t)) {
-    const glowPath = createEl('path', {
-      d: t.svgPath || t.d || '',
-      fill: 'none',
-      stroke: lightenHex(contColor, 0.45),
-      'stroke-width': '6',
-      'stroke-linejoin': 'round',
-      'stroke-opacity': '0.55',
-      filter: 'url(#cont-glow)'
-    });
-    glowGroup.appendChild(glowPath);
-  }
 
   const path = createEl('path', {
     d: t.svgPath || t.d || '',
     fill: fillColor,
-    'fill-opacity': terrState.owner ? '0.72' : '0.35',
-    stroke: contColor,
-    'stroke-width': '2',
+    'fill-opacity': '1',
+    stroke: '#111111',
+    'stroke-width': '1',
     'stroke-linejoin': 'round',
-    'stroke-opacity': '0.85',
+    'stroke-opacity': '1',
     'paint-order': 'stroke fill',
     class: 'territory-path',
     id: `terr-${t.id}`,
@@ -152,6 +145,18 @@ function renderTerritory(t, terrGroup, labelGroup, glowGroup) {
   path.addEventListener('mousemove', e => moveTooltip(e));
   path.addEventListener('mouseleave', hideTooltip);
   terrGroup.appendChild(path);
+
+  // Territoriumslabel: kleiner, weißer, gut lesbarer Name
+  if (nameLabelGroup) {
+    const nameLabel = createEl('text', {
+      x: t.labelX, y: t.labelY - 16,
+      'text-anchor': 'middle',
+      class: 'territory-label',
+      fill: '#ffffff'
+    });
+    nameLabel.textContent = t.name;
+    nameLabelGroup.appendChild(nameLabel);
+  }
 
   // Troop bubble
   const bubble = createEl('g', { class: 'troop-bubble', id: `bubble-${t.id}` });
@@ -204,12 +209,12 @@ function refreshTerritories() {
   for (const t of mapData.territories) {
     const terrState = gameState.territories[t.id] || { owner: null, troops: 0 };
     const owner = gameState.players?.find(p => p.id === terrState.owner);
-    const fillColor = owner ? owner.color : '#2d3748';
+    const fillColor = owner ? owner.color : '#2d4a2d';
 
     const path = document.getElementById(`terr-${t.id}`);
     if (path) {
       path.setAttribute('fill', fillColor);
-      path.setAttribute('fill-opacity', terrState.owner ? '0.72' : '0.35');
+      path.setAttribute('fill-opacity', '1');
     }
 
     const bubble = document.getElementById(`bubble-${t.id}`);

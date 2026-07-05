@@ -37,6 +37,11 @@ function renderMap() {
   waterPattern.appendChild(createEl('circle', { cx: 4, cy: 16, r: 0.7, fill: '#1f4872', 'fill-opacity': '0.4' }));
   defs.appendChild(waterPattern);
 
+  // Arrowhead marker for attack arrows
+  const arrowMarker = createEl('marker', { id: 'arrow-head', markerWidth: '10', markerHeight: '7', refX: '9', refY: '3.5', orient: 'auto' });
+  arrowMarker.appendChild(createEl('polygon', { points: '0 0, 10 3.5, 0 7', fill: '#ff4444', 'fill-opacity': '0.9' }));
+  defs.appendChild(arrowMarker);
+
   // Glow filter for continent borders
   const glowFilter = createEl('filter', { id: 'cont-glow', x: '-20%', y: '-20%', width: '140%', height: '140%' });
   const feGauss = createEl('feGaussianBlur', { stdDeviation: '2', result: 'blur' });
@@ -84,6 +89,10 @@ function renderMap() {
   svg.appendChild(nameLabelGroup);
   const labelGroup = createEl('g', { id: 'labels' });
   svg.appendChild(labelGroup);
+
+  // Attack arrows group — topmost so they're above everything
+  const attackArrowsGroup = createEl('g', { id: 'attack-arrows', style: 'pointer-events:none' });
+  svg.appendChild(attackArrowsGroup);
 
   // Continent labels (topmost, large watermark-style)
   const contLabelGroup = createEl('g', { id: 'cont-labels', style: 'pointer-events:none' });
@@ -372,4 +381,85 @@ function createEl(tag, attrs = {}) {
 
 function getTerritoryById(id) {
   return mapData?.territories?.find(t => t.id === id) || null;
+}
+
+// ── MAP ZOOM ──────────────────────────────────────────────────────────────────
+
+function zoomToTerritory(t) {
+  const svg = document.getElementById('game-map');
+  if (!svg || !t || !mapData) return;
+  const vb = (mapData.viewBox || '0 0 800 600').split(' ').map(Number);
+  const nx = t.labelX / vb[2];  // 0..1 horizontal fraction
+  const ny = t.labelY / vb[3];  // 0..1 vertical fraction
+  const s = 1.8;
+  // Scale from center, then translate so territory ends up centered
+  // translate in CSS scale(s) translate(...): % is of own element size pre-scale
+  const tx = (0.5 - nx) * 100;
+  const ty = (0.5 - ny) * 100;
+  svg.style.transformOrigin = 'center center';
+  svg.style.transform = `scale(${s}) translate(${tx / s}%, ${ty / s}%)`;
+}
+
+function resetZoom() {
+  const svg = document.getElementById('game-map');
+  if (!svg) return;
+  svg.style.transform = 'none';
+  svg.style.transformOrigin = 'center center';
+}
+
+// ── ATTACK ARROWS ─────────────────────────────────────────────────────────────
+
+function drawAttackArrows(fromId, toIds) {
+  const group = document.getElementById('attack-arrows');
+  if (!group || !mapData) return;
+  group.innerHTML = '';
+
+  const from = mapData.territories.find(t => t.id === fromId);
+  if (!from) return;
+
+  for (const toId of toIds) {
+    const to = mapData.territories.find(t => t.id === toId);
+    if (!to) continue;
+
+    const dx = to.labelX - from.labelX;
+    const dy = to.labelY - from.labelY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 1) continue;
+
+    // Shorten both ends to avoid overlapping troop bubbles
+    const gap = 18 / dist;
+    const x1 = from.labelX + dx * gap;
+    const y1 = from.labelY + dy * gap;
+    const x2 = to.labelX - dx * gap;
+    const y2 = to.labelY - dy * gap;
+
+    const arrow = createEl('path', {
+      d: `M ${x1},${y1} L ${x2},${y2}`,
+      fill: 'none',
+      stroke: '#ff4444',
+      'stroke-width': '2.5',
+      'stroke-dasharray': '8 4',
+      'stroke-linecap': 'round',
+      'stroke-opacity': '0.85',
+      'marker-end': 'url(#arrow-head)',
+      class: 'attack-arrow',
+    });
+    group.appendChild(arrow);
+  }
+}
+
+function clearAttackArrows() {
+  const group = document.getElementById('attack-arrows');
+  if (group) group.innerHTML = '';
+}
+
+function shakeTerritory(id) {
+  const el = document.getElementById(`terr-${id}`);
+  const cover = document.getElementById(`cont-cover-${id}`);
+  [el, cover].filter(Boolean).forEach(e => {
+    e.classList.remove('territory-shaking');
+    void e.offsetWidth; // reflow to restart animation
+    e.classList.add('territory-shaking');
+    setTimeout(() => e.classList.remove('territory-shaking'), 500);
+  });
 }

@@ -302,11 +302,24 @@ function hideTerritorySidebar() {
   document.getElementById('winChanceArea').style.display = 'none';
 }
 
-function showAttackButtons(show, showBlitz = false) {
+function showAttackButtons(show, showBlitz = false, attackerTroops = 0) {
   const attackBtn = document.getElementById('attackBtn');
   const blitzBtn = document.getElementById('blitzBtn');
-  if (attackBtn) attackBtn.style.display = show ? '' : 'none';
-  if (blitzBtn) blitzBtn.style.display = (show && showBlitz) ? '' : 'none';
+
+  if (attackBtn) {
+    attackBtn.style.display = show ? '' : 'none';
+    attackBtn.disabled = !show || attackerTroops < 2;
+    attackBtn.style.opacity = (show && attackerTroops >= 2) ? '1' : '0.4';
+    attackBtn.style.cursor = (show && attackerTroops >= 2) ? 'pointer' : 'not-allowed';
+  }
+
+  if (blitzBtn) {
+    const blitzVisible = show && showBlitz;
+    blitzBtn.style.display = blitzVisible ? '' : 'none';
+    blitzBtn.disabled = !blitzVisible || attackerTroops < 2;
+    blitzBtn.style.opacity = (blitzVisible && attackerTroops >= 2) ? '1' : '0.4';
+    blitzBtn.style.cursor = (blitzVisible && attackerTroops >= 2) ? 'pointer' : 'not-allowed';
+  }
 }
 
 function showFortifyButton(show) {

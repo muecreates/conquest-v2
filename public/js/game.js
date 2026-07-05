@@ -100,8 +100,8 @@ function handleStateUpdate() {
     updateSpecialCardUI(myPlayerState.specialCard, state.phase, isMyTurn);
   }
 
-  // Reset selection if turn changed
-  if (!isMyTurn) {
+  // Reset selection if turn changed or phase changed
+  if (!isMyTurn || state.phase === 'fortify' || state.phase === 'draft') {
     clearSelection();
   }
 
@@ -175,19 +175,26 @@ function handleTerritoryClick(territoryId) {
       selectedFrom = territoryId;
       setSelectedTerritory(territoryId);
 
-      // Highlight attackable neighbors
+      // Zoom in + highlight attackable neighbors with arrows
+      const fromTerrData = state.mapData.territories.find(t => t.id === territoryId);
+      if (fromTerrData) zoomToTerritory(fromTerrData);
       const adjacents = getAdjacentEnemies(territoryId);
       setHighlightedTerritories(adjacents, 'attackable');
+      drawAttackArrows(territoryId, adjacents);
       showAttackButtons(false);
       showToast('Wähle ein Angriffsziel!');
     } else if (territoryId === selectedFrom) {
       clearSelection();
     } else if (terrState.owner === myPlayerId) {
       // Switch source
+      clearAttackArrows();
       selectedFrom = territoryId;
       setSelectedTerritory(territoryId);
+      const switchTerrData = state.mapData.territories.find(t => t.id === territoryId);
+      if (switchTerrData) zoomToTerritory(switchTerrData);
       const adjacents = getAdjacentEnemies(territoryId);
       setHighlightedTerritories(adjacents, 'attackable');
+      drawAttackArrows(territoryId, adjacents);
     } else {
       // Attack target
       const adjacents = getAdjacentEnemies(selectedFrom);
@@ -204,9 +211,9 @@ function handleTerritoryClick(territoryId) {
       const key = `${attDice}v${defDice}`;
       updateWinChance(fromTroops, toTroops, key);
 
-      // Show attack buttons
+      // Show attack buttons — pass troop count so blitz is disabled if < 2
       const useBlitz = combatMode === 'blitz';
-      showAttackButtons(true, useBlitz);
+      showAttackButtons(true, useBlitz, fromTroops);
     }
     return;
   }
@@ -257,20 +264,33 @@ function updateWinChance(fromTroops, toTroops, key) {
 function bindButtons() {
   $('endDraftBtn')?.addEventListener('click', () => sendAction('end_draft', {}));
   $('endAttackBtn')?.addEventListener('click', () => {
+    clearAttackArrows();
+    resetZoom();
     sendAction('start_fortify', {});
     clearSelection();
   });
   $('attackBtn')?.addEventListener('click', () => {
     if (!selectedFrom || !selectedTo) return;
-    sendAction('attack', { fromId: selectedFrom, toId: selectedTo });
-    showDiceSection(true);
-    clearAttackSelection();
+    // Shake both territories before sending
+    shakeTerritory(selectedFrom);
+    shakeTerritory(selectedTo);
+    clearAttackArrows();
+    setTimeout(() => {
+      sendAction('attack', { fromId: selectedFrom, toId: selectedTo });
+      showDiceSection(true);
+      clearAttackSelection();
+    }, 150);
   });
   $('blitzBtn')?.addEventListener('click', () => {
     if (!selectedFrom || !selectedTo) return;
-    sendAction('blitz_attack', { fromId: selectedFrom, toId: selectedTo });
-    showDiceSection(true);
-    clearAttackSelection();
+    shakeTerritory(selectedFrom);
+    shakeTerritory(selectedTo);
+    clearAttackArrows();
+    setTimeout(() => {
+      sendAction('blitz_attack', { fromId: selectedFrom, toId: selectedTo });
+      showDiceSection(true);
+      clearAttackSelection();
+    }, 150);
   });
   $('skipFortifyBtn')?.addEventListener('click', () => {
     sendAction('skip_fortify', {});
@@ -402,6 +422,7 @@ function getConnectedOwn(startId) {
 function clearAttackSelection() {
   selectedTo = null;
   setHighlightedTerritories([], 'attackable');
+  clearAttackArrows();
   showAttackButtons(false);
   showWinChanceArea(false);
 }
@@ -411,6 +432,8 @@ function clearSelection() {
   selectedTo = null;
   setSelectedTerritory(null);
   setHighlightedTerritories([]);
+  clearAttackArrows();
+  resetZoom();
   hideDeployControl();
   hideDeployBottomPanel();
   hideTerritorySidebar();

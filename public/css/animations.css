@@ -228,6 +228,50 @@
   font-weight: 900;
 }
 
+/* ── ATTACK ARROWS (marching ants) ──────────────────────────── */
+@keyframes march {
+  to { stroke-dashoffset: -12; }
+}
+
+.attack-arrow {
+  animation: march 0.6s linear infinite;
+  pointer-events: none;
+}
+
+/* ── TERRITORY SHAKE ─────────────────────────────────────────── */
+@keyframes territory-shake {
+  0%,100% { transform: translate(0,0); }
+  15%      { transform: translate(-4px,-2px); }
+  30%      { transform: translate(4px,2px); }
+  45%      { transform: translate(-3px,3px); }
+  60%      { transform: translate(3px,-3px); }
+  75%      { transform: translate(-2px,1px); }
+  90%      { transform: translate(2px,-1px); }
+}
+
+.territory-shaking {
+  animation: territory-shake 0.45s ease forwards;
+}
+
+/* ── CONQUER REVEAL (wipe left→right) ───────────────────────── */
+@keyframes conquer-wipe {
+  0%   { filter: brightness(3) saturate(0); }
+  25%  { filter: brightness(2.5) saturate(0.3); }
+  60%  { filter: brightness(1.8) saturate(0.7); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+.territory-conquering {
+  animation: conquer-wipe 0.7s ease-out forwards;
+}
+
+/* ── MAP ZOOM ────────────────────────────────────────────────── */
+#game-map {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform-origin 0.4s ease;
+  will-change: transform;
+}
+
 /* ── MISC HELPERS ────────────────────────────────────────────── */
 @keyframes spin-once {
   from { transform: rotate(0deg); }

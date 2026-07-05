@@ -47,13 +47,13 @@ button {
 button:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: rgba(255,255,255,0.1);
-  color: var(--text);
+  background: #ffffff;
+  color: #0d1117;
   padding: 10px 20px;
-  font-weight: 600;
-  border: 1px solid rgba(255,255,255,0.15);
+  font-weight: 700;
+  border: none;
 }
-.btn-primary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+.btn-primary:hover { background: #e0e0e0; color: #0d1117; }
 
 .btn-secondary {
   background: var(--panel2);

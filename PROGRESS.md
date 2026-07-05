@@ -1,7 +1,7 @@
-## Status: FERTIG — v2.4.0
+## Status: FERTIG — v2.5.0
 
-## Zuletzt abgeschlossen: Alle 6 Hauptmaps mit echten Geodaten neu gebaut + neues Design-System
-## Nächster Schritt: git push origin main → Railway auto-deploy
+## Zuletzt abgeschlossen: Phase 2+3+4 — Cinzel Font, Gold-Design-System, vollständige Animation-Suite
+## Nächster Schritt: git push origin main → Railway auto-deploy (bereits committed)
 
 ## Starten
 ```bash

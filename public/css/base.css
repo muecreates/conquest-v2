@@ -4,9 +4,9 @@
   --bg:       #0d1117;
   --panel:    #161b22;
   --panel2:   #1c2430;
-  --border:   #f0c040;
-  --accent:   #f0c040;
-  --accent2:  #c8a020;
+  --border:   rgba(255,255,255,0.08);
+  --accent:   #c8d0e0;
+  --accent2:  #8090a8;
   --text:     #e6edf3;
   --sub:      #8b949e;
   --success:  #3fb950;
@@ -27,7 +27,7 @@
 
 html, body {
   height: 100%;
-  font-family: 'Cinzel', 'Georgia', serif;
+  font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
@@ -37,23 +37,23 @@ html, body {
 button {
   cursor: pointer;
   border: none;
-  font-family: 'Cinzel', 'Georgia', serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
   border-radius: var(--radius);
   transition: all 0.15s ease;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 }
 
 button:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: var(--gold);
-  color: #1a1a2e;
+  background: rgba(255,255,255,0.1);
+  color: var(--text);
   padding: 10px 20px;
-  font-weight: 700;
-  border: 1px solid var(--gold);
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.15);
 }
-.btn-primary:hover { background: #1a1a2e; color: var(--gold); }
+.btn-primary:hover { background: rgba(255,255,255,0.18); color: #fff; }
 
 .btn-secondary {
   background: var(--panel2);
@@ -61,7 +61,7 @@ button:active { transform: scale(0.97); }
   padding: 8px 16px;
   border: 1px solid var(--border);
 }
-.btn-secondary:hover { background: rgba(240,192,64,0.1); color: var(--gold); }
+.btn-secondary:hover { background: rgba(255,255,255,0.08); color: #fff; }
 
 .btn-danger {
   background: var(--danger);

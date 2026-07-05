@@ -41,6 +41,7 @@ function assignTerritories(state, mode) {
   const playerCount = state.players.length;
 
   if (mode === 'balanced' || mode === 'auto') {
+    // Balanced assignment: distribute territories evenly across continents
     const contGroups = {};
     for (const t of state.mapData.territories) {
       if (!contGroups[t.continent]) contGroups[t.continent] = [];
@@ -54,11 +55,32 @@ function assignTerritories(state, mode) {
         playerIdx++;
       }
     }
-  } else {
-    for (let i = 0; i < shuffled.length; i++) {
-      state.territories[shuffled[i]].owner = state.players[i % playerCount].id;
-      state.territories[shuffled[i]].troops = 1;
+
+    // Subtract 1 troop per owned territory
+    for (const p of state.players) {
+      const owned = Object.values(state.territories).filter(t => t.owner === p.id).length;
+      p.troops = Math.max(0, p.troops - owned);
     }
+
+    // Auto-distribute all remaining troops randomly across owned territories
+    for (const p of state.players) {
+      const ownedIds = Object.entries(state.territories)
+        .filter(([, t]) => t.owner === p.id).map(([id]) => id);
+      while (p.troops > 0 && ownedIds.length > 0) {
+        state.territories[ownedIds[Math.floor(Math.random() * ownedIds.length)]].troops++;
+        p.troops--;
+      }
+    }
+
+    // Skip setup phase entirely, go straight to draft
+    startDraftPhase(state);
+    return;
+  }
+
+  // Draft/classic mode: assign territories, leave troops for manual setup phase
+  for (let i = 0; i < shuffled.length; i++) {
+    state.territories[shuffled[i]].owner = state.players[i % playerCount].id;
+    state.territories[shuffled[i]].troops = 1;
   }
 
   for (const p of state.players) {

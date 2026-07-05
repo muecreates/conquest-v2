@@ -120,7 +120,7 @@
   border: 1px solid var(--gold);
   border-top: none;
   background: rgba(0,0,0,0.92);
-  font-family: 'Cinzel', 'Georgia', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 18px;
   font-weight: 900;
   letter-spacing: 3px;
@@ -157,7 +157,7 @@
 .trade-bonus-popup {
   position: fixed;
   z-index: 4100;
-  font-family: 'Cinzel', 'Georgia', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 32px;
   font-weight: 900;
   color: var(--gold);
@@ -206,7 +206,7 @@
 
 .phase-tab {
   padding: 6px 18px;
-  font-family: 'Cinzel', 'Georgia', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 2px;

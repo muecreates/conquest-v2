@@ -25,14 +25,34 @@ function renderMap() {
   svg.setAttribute('viewBox', vb);
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-  // Background — dunkles Marineblau (Wasser)
-  svg.appendChild(createEl('rect', { x: 0, y: 0, width: 9999, height: 9999, fill: '#1a3a5c' }));
-
   const defs = createEl('defs', {});
+
+  // Water texture pattern — subtle dot grid in ocean blue
+  const waterPattern = createEl('pattern', { id: 'water-pattern', x: 0, y: 0, width: 24, height: 24, patternUnits: 'userSpaceOnUse' });
+  waterPattern.appendChild(createEl('rect', { x: 0, y: 0, width: 24, height: 24, fill: '#1a3a5c' }));
+  waterPattern.appendChild(createEl('circle', { cx: 4, cy: 4, r: 1.2, fill: '#2050820', 'fill-opacity': '0' }));
+  waterPattern.appendChild(createEl('circle', { cx: 4, cy: 4, r: 1.2, fill: '#1f4872', 'fill-opacity': '0.7' }));
+  waterPattern.appendChild(createEl('circle', { cx: 16, cy: 16, r: 1.2, fill: '#1f4872', 'fill-opacity': '0.7' }));
+  waterPattern.appendChild(createEl('circle', { cx: 16, cy: 4, r: 0.7, fill: '#1f4872', 'fill-opacity': '0.4' }));
+  waterPattern.appendChild(createEl('circle', { cx: 4, cy: 16, r: 0.7, fill: '#1f4872', 'fill-opacity': '0.4' }));
+  defs.appendChild(waterPattern);
+
+  // Glow filter for continent borders
+  const glowFilter = createEl('filter', { id: 'cont-glow', x: '-20%', y: '-20%', width: '140%', height: '140%' });
+  const feGauss = createEl('feGaussianBlur', { stdDeviation: '2', result: 'blur' });
+  const feMerge = createEl('feMerge', {});
+  const feMergeNode1 = createEl('feMergeNode', { in: 'blur' });
+  const feMergeNode2 = createEl('feMergeNode', { in: 'SourceGraphic' });
+  feMerge.appendChild(feMergeNode1);
+  feMerge.appendChild(feMergeNode2);
+  glowFilter.appendChild(feGauss);
+  glowFilter.appendChild(feMerge);
+  defs.appendChild(glowFilter);
+
   svg.appendChild(defs);
 
-  // Kontinentgrenzen-Overlay (gezeichnet nach den Territorien, siehe unten)
-  const contBorderGroup = createEl('g', { id: 'cont-borders', style: 'pointer-events:none' });
+  // Background — water texture
+  svg.appendChild(createEl('rect', { x: 0, y: 0, width: 9999, height: 9999, fill: 'url(#water-pattern)' }));
 
   // Cross-connections
   const linesGroup = createEl('g', { id: 'cross-lines' });
@@ -51,20 +71,21 @@ function renderMap() {
   }
   svg.appendChild(linesGroup);
 
-  // Territory paths (one group per continent for z-ordering)
+  // Territory paths
   const terrGroup = createEl('g', { id: 'territories' });
   svg.appendChild(terrGroup);
 
-  // Territoriumslabels (Name, klein & weiß) + Truppen-Bubbles
+  // Continent border overlay (gold outlines + cover layer) — sits above territories
+  const contBorderGroup = createEl('g', { id: 'cont-borders', style: 'pointer-events:none' });
+  svg.appendChild(contBorderGroup);
+
+  // Name labels and troop bubbles sit on top of borders
   const nameLabelGroup = createEl('g', { id: 'name-labels', style: 'pointer-events:none' });
   svg.appendChild(nameLabelGroup);
   const labelGroup = createEl('g', { id: 'labels' });
   svg.appendChild(labelGroup);
 
-  // Kontinentgrenzen-Overlay liegt über den Territorien
-  svg.appendChild(contBorderGroup);
-
-  // Continent labels group (on top, no pointer events)
+  // Continent labels (topmost, large watermark-style)
   const contLabelGroup = createEl('g', { id: 'cont-labels', style: 'pointer-events:none' });
   svg.appendChild(contLabelGroup);
 
@@ -72,10 +93,8 @@ function renderMap() {
     renderTerritory(t, terrGroup, labelGroup, nameLabelGroup);
   }
 
-  // Kontinentgrenzen als eigenes Overlay zeichnen
   drawContinentBorders(contBorderGroup);
 
-  // Draw continent labels
   if (mapData.continents) {
     renderContinentLabels(contLabelGroup);
   }
@@ -83,43 +102,62 @@ function renderMap() {
   setupMapTooltip(svg);
 }
 
-// Zeichnet die Außengrenze jedes Kontinents als durchgehende gelbe Linie,
-// indem die Territory-Pfade pro Kontinent vereinigt und nur deren Rand gestrokt wird.
+// Two-pass continent borders:
+// Pass 1: draw all continent territories with gold stroke (creates outer ring)
+// Pass 2: draw all territories with territory fill + black border (covers internal gold lines)
 function drawContinentBorders(group) {
   if (!mapData.continents) return;
+
+  // Build set of territory→continent for lookup
+  const terrContinent = {};
+  for (const [contId] of Object.entries(mapData.continents)) {
+    for (const tid of (mapData.continents[contId].territories || [])) {
+      terrContinent[tid] = contId;
+    }
+  }
+
+  // Pass 1: gold outline for each continent (group per continent for color differentiation)
+  const outlineGroup = createEl('g', { id: 'cont-outlines' });
   for (const [contId, cont] of Object.entries(mapData.continents)) {
     for (const tid of (cont.territories || [])) {
       const t = mapData.territories.find(x => x.id === tid);
-      if (!t || !isContinentBorder(t)) continue;
-      group.appendChild(createEl('path', {
+      if (!t) continue;
+      outlineGroup.appendChild(createEl('path', {
         d: t.svgPath || t.d || '',
         fill: 'none',
         stroke: '#f0c040',
-        'stroke-width': '3',
+        'stroke-width': '7',
         'stroke-linejoin': 'round',
-        'stroke-opacity': '0.9'
+        'stroke-opacity': '0.85',
+        filter: 'url(#cont-glow)',
       }));
     }
   }
-}
+  group.appendChild(outlineGroup);
 
-function isContinentBorder(t) {
-  const adj = new Set(t.adjacencies || []);
-  for (const cc of (mapData.crossConnections || [])) {
-    if (cc.from === t.id) adj.add(cc.to);
-    if (cc.to === t.id) adj.add(cc.from);
+  // Pass 2: cover internal gold borders with territory fill + thin black border
+  const coverGroup = createEl('g', { id: 'cont-cover' });
+  for (const t of mapData.territories) {
+    const terrState = gameState?.territories?.[t.id] || { owner: null, troops: 0 };
+    const owner = gameState?.players?.find(p => p.id === terrState.owner);
+    const fillColor = owner ? owner.color : '#2d4a2d';
+    coverGroup.appendChild(createEl('path', {
+      id: `cont-cover-${t.id}`,
+      d: t.svgPath || t.d || '',
+      fill: fillColor,
+      'fill-opacity': '1',
+      stroke: '#111111',
+      'stroke-width': '1',
+      'stroke-linejoin': 'round',
+      'paint-order': 'stroke fill',
+    }));
   }
-  for (const adjId of adj) {
-    const adjT = mapData.territories.find(x => x.id === adjId);
-    if (adjT && adjT.continent !== t.continent) return true;
-  }
-  return false;
+  group.appendChild(coverGroup);
 }
 
 function renderTerritory(t, terrGroup, labelGroup, nameLabelGroup) {
   const terrState = gameState?.territories?.[t.id] || { owner: null, troops: 0 };
   const owner = gameState?.players?.find(p => p.id === terrState.owner);
-  // Ungeclaimed: dunkles Olive/Grau-Grün. Conquered: Spielerfarbe komplett.
   const fillColor = owner ? owner.color : '#2d4a2d';
 
   const contData = mapData.continents?.[t.continent];
@@ -146,13 +184,17 @@ function renderTerritory(t, terrGroup, labelGroup, nameLabelGroup) {
   path.addEventListener('mouseleave', hideTooltip);
   terrGroup.appendChild(path);
 
-  // Territoriumslabel: kleiner, weißer, gut lesbarer Name
+  // Territory name label — with text outline for readability
   if (nameLabelGroup) {
     const nameLabel = createEl('text', {
-      x: t.labelX, y: t.labelY - 16,
+      x: t.labelX, y: t.labelY - 14,
       'text-anchor': 'middle',
+      'dominant-baseline': 'middle',
       class: 'territory-label',
-      fill: '#ffffff'
+      fill: '#ffffff',
+      stroke: '#0d1117',
+      'stroke-width': '2.5',
+      'paint-order': 'stroke fill',
     });
     nameLabel.textContent = t.name;
     nameLabelGroup.appendChild(nameLabel);
@@ -160,7 +202,7 @@ function renderTerritory(t, terrGroup, labelGroup, nameLabelGroup) {
 
   // Troop bubble
   const bubble = createEl('g', { class: 'troop-bubble', id: `bubble-${t.id}` });
-  const circle = createEl('circle', { cx: t.labelX, cy: t.labelY, r: '13', fill: 'rgba(0,0,0,0.7)', stroke: contColor, 'stroke-width': '1.5' });
+  const circle = createEl('circle', { cx: t.labelX, cy: t.labelY, r: '13', fill: 'rgba(0,0,0,0.8)', stroke: contColor, 'stroke-width': '1.5' });
   const text = createEl('text', { x: t.labelX, y: t.labelY, class: 'bubble-text' });
   text.textContent = terrState.troops || '0';
   bubble.appendChild(circle);
@@ -176,7 +218,6 @@ function renderContinentLabels(group) {
 
   for (const [contId, cont] of Object.entries(continents)) {
     const terrs = cont.territories || [];
-    // Compute centroid of all label positions for this continent
     const pts = terrs.map(tid => {
       const t = mapData.territories.find(x => x.id === tid);
       return t ? [t.labelX, t.labelY] : null;
@@ -185,18 +226,21 @@ function renderContinentLabels(group) {
     const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
     const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length;
 
+    const fontSize = Math.max(18, Math.min(32, vbW / 35));
     const label = createEl('text', {
       x: cx, y: cy,
       'text-anchor': 'middle',
       'dominant-baseline': 'middle',
       fill: cont.color || '#fff',
-      'fill-opacity': '0.18',
-      'font-size': Math.max(16, Math.min(28, vbW / 40)),
+      'fill-opacity': '0.35',
+      stroke: '#000',
+      'stroke-opacity': '0.15',
+      'stroke-width': '1',
+      'font-size': fontSize,
       'font-weight': '900',
-      'font-family': 'monospace',
-      'letter-spacing': '2',
-      'text-transform': 'uppercase',
-      style: 'pointer-events:none; user-select:none; text-transform:uppercase'
+      'font-family': 'Cinzel, Georgia, serif',
+      'letter-spacing': '3',
+      style: 'pointer-events:none; user-select:none; text-transform:uppercase',
     });
     label.textContent = (cont.name || contId).toUpperCase();
     group.appendChild(label);
@@ -217,6 +261,10 @@ function refreshTerritories() {
       path.setAttribute('fill-opacity', '1');
     }
 
+    // Update continent cover layer
+    const cover = document.getElementById(`cont-cover-${t.id}`);
+    if (cover) cover.setAttribute('fill', fillColor);
+
     const bubble = document.getElementById(`bubble-${t.id}`);
     if (bubble) {
       const text = bubble.querySelector('text');
@@ -235,6 +283,8 @@ function setSelectedTerritory(id) {
   if (selectedTerritoryId) {
     const prev = document.getElementById(`terr-${selectedTerritoryId}`);
     if (prev) prev.classList.remove('selected');
+    const prevCover = document.getElementById(`cont-cover-${selectedTerritoryId}`);
+    if (prevCover) prevCover.classList.remove('selected');
   }
   selectedTerritoryId = id;
   if (id) {

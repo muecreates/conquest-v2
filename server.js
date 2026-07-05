@@ -38,37 +38,48 @@ function buildThumbSVG(map) {
   const vb = (map.viewBox || '0 0 960 600').split(' ');
   const vW = parseFloat(vb[2]) || 960;
   const vH = parseFloat(vb[3]) || 600;
-  const W = 60, H = 40;
+  const W = 80, H = 52;
   const contColors = {};
   for (const [id, c] of Object.entries(map.continents || {})) {
     for (const tid of (c.territories || [])) contColors[tid] = c.color || '#4a5568';
   }
 
-  // Use simplified approach: just circles at territory label positions
-  // For small maps (<20 territories), try to use paths but with heavy simplification
   const terrs = map.territories;
-  let content = '';
+  const strokeW = Math.max(0.5, vW / 400);
 
-  if (terrs.length <= 16) {
-    // Short paths: take first 30 coords only
-    content = terrs.map(t => {
-      const d = t.svgPath || t.d || '';
-      if (!d) return '';
-      // Take only the first 200 chars of path (rough shape)
-      const shortD = d.length > 300 ? d.substring(0, 300).replace(/\s[LlCcQqAa][^MLZ]*$/, ' Z') : d;
-      const color = contColors[t.id] || '#4a5568';
-      return `<path d="${shortD}" fill="${color}" fill-opacity="0.75" stroke="#0a1628" stroke-width="${vW/150}"/>`;
-    }).join('');
-  } else {
-    // Large maps: dots only
-    const r = Math.max(4, vW / 80);
-    content = terrs.map(t => {
-      const color = contColors[t.id] || '#4a5568';
-      return `<circle cx="${t.labelX}" cy="${t.labelY}" r="${r}" fill="${color}" fill-opacity="0.85"/>`;
-    }).join('');
-  }
+  // Use actual paths for all maps — truncate very long paths to keep SVG size reasonable
+  const content = terrs.map(t => {
+    const d = t.svgPath || t.d || '';
+    if (!d) return '';
+    const color = contColors[t.id] || '#4a5568';
+    // For very long paths, take a simplified version (first M + subset of points)
+    let shortD = d;
+    if (d.length > 600) {
+      // Keep first 500 chars and try to close the path
+      shortD = d.substring(0, 500).replace(/\s[LlCcQqAa][^MLmZ]*$/, '') + ' Z';
+    }
+    return `<path d="${shortD}" fill="${color}" fill-opacity="0.8" stroke="#0a1628" stroke-width="${strokeW}" stroke-linejoin="round"/>`;
+  }).join('');
 
-  return `<svg viewBox="${vb[0]} ${vb[1]} ${vW} ${vH}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;border-radius:3px;background:#0a1628">${content}</svg>`;
+  // Continent gold borders overlay
+  const borders = terrs.map(t => {
+    const d = t.svgPath || t.d || '';
+    if (!d) return '';
+    let shortD = d;
+    if (d.length > 600) shortD = d.substring(0, 500).replace(/\s[LlCcQqAa][^MLmZ]*$/, '') + ' Z';
+    return `<path d="${shortD}" fill="none" stroke="#f0c040" stroke-width="${strokeW * 2}" stroke-linejoin="round" stroke-opacity="0.6"/>`;
+  }).filter((_, i) => {
+    // Only draw borders for continent-edge territories (territories adjacent to other continents)
+    const t = terrs[i];
+    if (!t) return false;
+    const adj = t.adjacencies || [];
+    return adj.some(adjId => {
+      const adjT = terrs.find(x => x.id === adjId);
+      return adjT && adjT.continent !== t.continent;
+    });
+  }).join('');
+
+  return `<svg viewBox="${vb[0]} ${vb[1]} ${vW} ${vH}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;border-radius:4px;background:#0f2340">${content}${borders}</svg>`;
 }
 
 const rooms = new Map();

@@ -173,11 +173,13 @@
 
 .territory-label {
   pointer-events: none;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-anchor: middle;
   dominant-baseline: middle;
   fill: #fff;
+  font-family: 'Cinzel', 'Georgia', serif;
+  letter-spacing: 0.3px;
 }
 
 /* Cross-connection lines */
@@ -425,7 +427,7 @@
 .die.defender { background: rgba(255,255,255,0.1); border-color: #8b949e; color: #e6edf3; }
 .die.winner { border-color: #f1c40f; box-shadow: 0 0 8px rgba(241,196,15,0.5); }
 .die.loser { opacity: 0.5; }
-.die.rolling { animation: rollDie 0.4s ease; }
+.die.rolling { animation: dice-roll-3d 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards; }
 
 .combat-result {
   margin-top: 10px;

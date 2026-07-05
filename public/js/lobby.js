@@ -106,7 +106,7 @@ async function loadMapThumbnails() {
       const emojiEl = card.querySelector('.map-emoji');
       if (emojiEl && svgStr) {
         emojiEl.innerHTML = svgStr;
-        emojiEl.style.cssText = 'display:flex;align-items:center;justify-content:center;width:60px;height:40px';
+        emojiEl.style.cssText = 'display:flex;align-items:center;justify-content:center;width:80px;height:52px;border-radius:4px;overflow:hidden';
       }
     }
   } catch(e) {

@@ -174,7 +174,7 @@
   background: rgba(240,192,64,0.08);
   box-shadow: 0 0 0 1px var(--gold);
 }
-.map-emoji { font-size: 22px; }
+.map-emoji { font-size: 22px; line-height: 1; min-height: 52px; display: flex; align-items: center; justify-content: center; }
 .map-name { font-size: 12px; font-weight: 600; color: var(--text); }
 .map-meta { font-size: 10px; color: var(--sub); }
 

@@ -194,8 +194,16 @@ function getSelectedCardIds() {
 }
 
 function clearSelectedCards() {
-  window._selectedCards = new Set();
-  document.querySelectorAll('.card.selected').forEach(el => el.classList.remove('selected'));
+  // Animate cards flying before clearing
+  document.querySelectorAll('.card.selected').forEach((el, i) => {
+    el.classList.add('card-trading');
+  });
+  setTimeout(() => {
+    window._selectedCards = new Set();
+    document.querySelectorAll('.card').forEach(el => {
+      el.classList.remove('selected', 'card-trading');
+    });
+  }, 500);
 }
 
 function showGameOver(winner, stats) {
@@ -206,6 +214,8 @@ function showGameOver(winner, stats) {
 
   if (!overlay) return;
   overlay.style.display = 'flex';
+  // Cinzel font for winner name
+  if (title) title.style.fontFamily = "'Cinzel','Georgia',serif";
 
   title.textContent = '🏆 Sieg!';
   winnerEl.textContent = `${winner.name} hat gewonnen!`;

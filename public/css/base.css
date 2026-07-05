@@ -4,9 +4,9 @@
   --bg:       #0d1117;
   --panel:    #161b22;
   --panel2:   #1c2430;
-  --border:   #30363d;
-  --accent:   #388bfd;
-  --accent2:  #1f6feb;
+  --border:   #f0c040;
+  --accent:   #f0c040;
+  --accent2:  #c8a020;
   --text:     #e6edf3;
   --sub:      #8b949e;
   --success:  #3fb950;
@@ -18,15 +18,16 @@
   --green:  #27ae60;
   --yellow: #f39c12;
   --purple: #8e44ad;
-  --teal:   #16a085;
+  --orange: #e67e22;
 
   --radius: 8px;
-  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow: 0 4px 20px rgba(0,0,0,0.6);
+  --gold: #f0c040;
 }
 
 html, body {
   height: 100%;
-  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Cinzel', 'Georgia', serif;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
@@ -36,21 +37,23 @@ html, body {
 button {
   cursor: pointer;
   border: none;
-  font-family: inherit;
-  font-size: 14px;
+  font-family: 'Cinzel', 'Georgia', serif;
+  font-size: 13px;
   border-radius: var(--radius);
   transition: all 0.15s ease;
+  letter-spacing: 0.5px;
 }
 
 button:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: var(--accent);
-  color: #fff;
+  background: var(--gold);
+  color: #1a1a2e;
   padding: 10px 20px;
-  font-weight: 600;
+  font-weight: 700;
+  border: 1px solid var(--gold);
 }
-.btn-primary:hover { background: var(--accent2); }
+.btn-primary:hover { background: #1a1a2e; color: var(--gold); }
 
 .btn-secondary {
   background: var(--panel2);
@@ -58,31 +61,34 @@ button:active { transform: scale(0.97); }
   padding: 8px 16px;
   border: 1px solid var(--border);
 }
-.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-secondary:hover { background: rgba(240,192,64,0.1); color: var(--gold); }
 
 .btn-danger {
   background: var(--danger);
   color: #fff;
   padding: 8px 16px;
-  font-weight: 600;
+  font-weight: 700;
+  border: 1px solid var(--danger);
 }
-.btn-danger:hover { background: #c0392b; }
+.btn-danger:hover { background: #1a1a2e; color: var(--danger); }
 
 .btn-success {
   background: var(--success);
   color: #fff;
   padding: 8px 16px;
-  font-weight: 600;
+  font-weight: 700;
+  border: 1px solid var(--success);
 }
-.btn-success:hover { background: #2ea043; }
+.btn-success:hover { background: #1a1a2e; color: var(--success); }
 
 .btn-warn {
   background: var(--warning);
   color: #fff;
   padding: 8px 16px;
-  font-weight: 600;
+  font-weight: 700;
+  border: 1px solid var(--warning);
 }
-.btn-warn:hover { background: #b08800; }
+.btn-warn:hover { background: #1a1a2e; color: var(--warning); }
 
 .btn-sm { padding: 5px 12px; font-size: 12px; }
 

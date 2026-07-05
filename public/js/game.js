@@ -41,14 +41,22 @@ function init() {
     myPlayerId = data.myPlayerId || myPlayerId;
     myHand = data.myHand || [];
     handleStateUpdate();
+    maybeShowTurnBanner(state);
+    updatePhaseTabRow(state.phase);
+    fixPlayerRowColors(state);
   });
 
-  socket.on('combat_result', result => { showCombatResult(result); });
+  socket.on('combat_result', result => {
+    showCombatResult(result);
+    if (result.conquered && result.territoryId) flashConqueredTerritory(result.territoryId);
+    if (result.fromId && result.toId) showCombatIndicator(result.fromId, result.toId);
+  });
 
   socket.on('last_chance', () => { showLastChanceOverlay(); });
 
   socket.on('game_over', data => {
     showGameOver(data.winner, data.stats);
+    startConfetti(data.winner?.color || '#f0c040');
     $('newGameBtn').onclick = () => location.reload();
     $('backLobbyBtn').onclick = () => window.location.href = '/';
   });
@@ -508,6 +516,170 @@ function showWinChance(pct, detail) {
   if (detailEl) detailEl.textContent = detail || '';
 }
 
+// ── ANIMATIONS ────────────────────────────────────────────────────────────────
+
+let _lastPlayerId = null;
+let _lastPhase = null;
+
+function maybeShowTurnBanner(state) {
+  const current = state.players[state.currentPlayerIndex];
+  if (!current) return;
+  const isNew = current.id !== _lastPlayerId || state.phase !== _lastPhase;
+  if (!isNew) return;
+  _lastPlayerId = current.id;
+  _lastPhase = state.phase;
+
+  const banner = $('turnBanner');
+  if (!banner) return;
+  banner.textContent = current.id === myPlayerId ? 'DEIN ZUG' : `${current.name.toUpperCase()} IST DRAN`;
+  banner.style.color = current.color;
+  banner.style.borderColor = current.color;
+  banner.style.display = '';
+  banner.classList.remove('hiding');
+
+  clearTimeout(banner._hideTimer);
+  banner._hideTimer = setTimeout(() => {
+    banner.classList.add('hiding');
+    setTimeout(() => { banner.style.display = 'none'; }, 420);
+  }, 2000);
+}
+
+function updatePhaseTabRow(phase) {
+  const tabs = { draft: 'ptabDraft', attack: 'ptabAttack', fortify: 'ptabFortify' };
+  for (const [p, id] of Object.entries(tabs)) {
+    const el = $(id);
+    if (el) el.classList.toggle('active', p === phase);
+  }
+  const row = $('phaseTabRow');
+  if (row) {
+    const show = ['draft','attack','fortify'].includes(phase);
+    row.style.display = show ? '' : 'none';
+  }
+}
+
+function flashConqueredTerritory(territoryId) {
+  const el = document.getElementById(`terr-${territoryId}`);
+  if (!el) return;
+  el.classList.add('territory-conquering');
+  setTimeout(() => el.classList.remove('territory-conquering'), 600);
+}
+
+function animateTroopMovement(fromId, toId, count) {
+  const fromEl = document.getElementById(`bubble-${fromId}`);
+  const toEl = document.getElementById(`bubble-${toId}`);
+  const svg = document.getElementById('game-map');
+  if (!fromEl || !toEl || !svg) return;
+
+  const svgRect = svg.getBoundingClientRect();
+  const fromRect = fromEl.getBoundingClientRect();
+  const toRect = toEl.getBoundingClientRect();
+
+  const mover = document.createElement('div');
+  mover.className = 'troop-mover';
+  mover.textContent = count;
+  mover.style.left = (fromRect.left + fromRect.width/2 - 14) + 'px';
+  mover.style.top  = (fromRect.top  + fromRect.height/2 - 14) + 'px';
+  document.body.appendChild(mover);
+
+  const dx = toRect.left - fromRect.left;
+  const dy = toRect.top  - fromRect.top;
+  mover.style.transform = `translate(${dx}px, ${dy}px)`;
+
+  setTimeout(() => mover.remove(), 750);
+}
+
+function showCombatIndicator(fromId, toId) {
+  const fromEl = document.getElementById(`bubble-${fromId}`);
+  const toEl = document.getElementById(`bubble-${toId}`);
+  const indicator = $('combatIndicator');
+  if (!fromEl || !toEl || !indicator) return;
+
+  const fromRect = fromEl.getBoundingClientRect();
+  const toRect   = toEl.getBoundingClientRect();
+  const midX = (fromRect.left + toRect.left) / 2 + fromRect.width/2;
+  const midY = (fromRect.top  + toRect.top)  / 2 + fromRect.height/2;
+
+  indicator.style.left = midX + 'px';
+  indicator.style.top  = midY + 'px';
+  indicator.style.display = '';
+  clearTimeout(indicator._hideTimer);
+  indicator._hideTimer = setTimeout(() => { indicator.style.display = 'none'; }, 2000);
+}
+
+// Canvas confetti particle system
+function startConfetti(winnerColor) {
+  const canvas = $('confetti-canvas');
+  if (!canvas) return;
+  canvas.style.display = '';
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  const colors = [winnerColor, '#f0c040', '#ffffff', '#f39c12', '#e74c3c'];
+  const particles = Array.from({ length: 150 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * -canvas.height * 0.5,
+    vx: (Math.random() - 0.5) * 4,
+    vy: Math.random() * 3 + 2,
+    size: Math.random() * 8 + 4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rotation: Math.random() * 360,
+    rotVel: (Math.random() - 0.5) * 6
+  }));
+
+  let frame = 0;
+  const maxFrames = 240;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of particles) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, 1 - frame / maxFrames);
+      ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 0.5);
+      ctx.restore();
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.1;
+      p.rotation += p.rotVel;
+    }
+    frame++;
+    if (frame < maxFrames) requestAnimationFrame(draw);
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = 'none'; }
+  }
+  draw();
+}
+
+function fixPlayerRowColors(state) {
+  const container = $('playersOverview');
+  if (!container) return;
+  const rows = container.querySelectorAll('.player-row');
+  const activePlayer = state.players[state.currentPlayerIndex];
+  rows.forEach((row, i) => {
+    const player = state.players[i];
+    if (player) {
+      row.style.setProperty('--player-color', player.color);
+    }
+  });
+}
+
+// Touch support for SVG territories
+function setupTouchEvents() {
+  const svg = document.getElementById('game-map');
+  if (!svg) return;
+  svg.addEventListener('touchend', e => {
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (el && el.dataset.id) handleTerritoryClick(el.dataset.id);
+  }, { passive: false });
+}
+
 // ── START ─────────────────────────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  setupTouchEvents();
+  init();
+});

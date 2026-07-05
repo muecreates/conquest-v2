@@ -15,12 +15,14 @@
 }
 .lby-title {
   font-size: 26px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  background: linear-gradient(135deg, var(--accent), #58a6ff);
+  font-weight: 900;
+  letter-spacing: 4px;
+  font-family: 'Cinzel', 'Georgia', serif;
+  background: linear-gradient(135deg, #f0c040, #e8a010);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-shadow: none;
 }
 .lby-version { font-size: 12px; color: var(--sub); letter-spacing: 1px; }
 
@@ -45,11 +47,11 @@
   cursor: pointer;
 }
 .preset-btn.active, .preset-btn:hover {
-  border-color: var(--accent);
+  border-color: var(--gold);
   color: var(--text);
-  background: rgba(56,139,253,0.08);
+  background: rgba(240,192,64,0.08);
 }
-.preset-btn.active { box-shadow: 0 0 0 1px var(--accent); }
+.preset-btn.active { box-shadow: 0 0 0 1px var(--gold); }
 .preset-icon { font-size: 20px; }
 .preset-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-top: 2px; }
 .preset-time { font-size: 11px; color: var(--accent); }
@@ -166,11 +168,11 @@
   transition: all 0.15s;
   text-align: center;
 }
-.map-card:hover { border-color: var(--accent); }
+.map-card:hover { border-color: var(--gold); }
 .map-card.active {
-  border-color: var(--accent);
-  background: rgba(56,139,253,0.1);
-  box-shadow: 0 0 0 1px var(--accent);
+  border-color: var(--gold);
+  background: rgba(240,192,64,0.08);
+  box-shadow: 0 0 0 1px var(--gold);
 }
 .map-emoji { font-size: 22px; }
 .map-name { font-size: 12px; font-weight: 600; color: var(--text); }
@@ -248,9 +250,9 @@
 }
 .tgl:hover { border-color: var(--accent); color: var(--text); }
 .tgl.active {
-  background: rgba(56,139,253,0.15);
-  border-color: var(--accent);
-  color: var(--accent);
+  background: rgba(240,192,64,0.15);
+  border-color: var(--gold);
+  color: var(--gold);
 }
 
 /* Multiplayer */
@@ -271,7 +273,7 @@
   transition: all 0.15s;
   border-radius: 0;
 }
-.mp-tab.active { border-bottom-color: var(--accent); color: var(--accent); }
+.mp-tab.active { border-bottom-color: var(--gold); color: var(--gold); }
 .mp-tab:hover { color: var(--text); }
 
 .room-code-display {
@@ -287,8 +289,8 @@
   font-size: 48px;
   font-weight: 800;
   letter-spacing: 12px;
-  color: var(--accent);
-  font-family: monospace;
+  color: var(--gold);
+  font-family: 'Cinzel', monospace;
 }
 
 .mp-players { margin-bottom: 12px; }

@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Conquest v2 — Spielfeld</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" href="css/game.css">
   <link rel="stylesheet" href="css/overlays.css">
 </head>
@@ -12,8 +16,14 @@
 <div class="game-layout">
   <!-- MAP + BOTTOM DEPLOY PANEL -->
   <div class="map-column">
-    <div class="map-area">
+    <div class="map-area" style="position:relative">
       <svg id="game-map" xmlns="http://www.w3.org/2000/svg"></svg>
+      <!-- Phase Tab Row sits at the top of the map -->
+      <div class="phase-tab-row" id="phaseTabRow" style="display:none; position:absolute; top:0; left:50%; transform:translateX(-50%); z-index:100; pointer-events:none">
+        <div class="phase-tab" id="ptabDraft">DRAFT</div>
+        <div class="phase-tab" id="ptabAttack">ANGRIFF</div>
+        <div class="phase-tab" id="ptabFortify">FORTIFY</div>
+      </div>
     </div>
 
     <!-- BOTTOM DEPLOY PANEL (visible when territory selected in setup/draft) -->
@@ -158,6 +168,15 @@
     </div>
   </div>
 </div>
+
+<!-- Confetti Canvas -->
+<canvas id="confetti-canvas" style="display:none"></canvas>
+
+<!-- Turn Banner -->
+<div id="turnBanner" class="turn-banner" style="display:none"></div>
+
+<!-- Combat Indicator (SVG overlay) -->
+<div id="combatIndicator" class="combat-indicator" style="display:none">⚔</div>
 
 <!-- Tooltip -->
 <div class="map-tooltip" id="mapTooltip">
